@@ -30,7 +30,7 @@ object Dependencies {
 
   object Kotlin {
     const val version = "1.4.20"
-    const val dokkaVersion = "1.4.10"
+    const val dokkaVersion = "1.4.20"
     const val jvmTarget = "1.8"
     val defaultFreeCompilerArgs = listOf("-Xjsr305=strict", "-progressive")
   }

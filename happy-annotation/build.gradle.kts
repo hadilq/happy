@@ -17,3 +17,5 @@
 plugins {
   kotlin("jvm")
 }
+
+setupPublication()

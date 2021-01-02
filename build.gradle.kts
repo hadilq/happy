@@ -26,27 +26,13 @@ buildscript {
 plugins {
   kotlin("jvm") version Dependencies.Kotlin.version apply false
   id("org.jetbrains.dokka") version Dependencies.Kotlin.dokkaVersion apply false
-  id("com.vanniktech.maven.publish") version "0.13.0" apply false
 }
 
 subprojects {
   repositories {
     mavenCentral()
     google()
-    // Required for Dokka
-    exclusiveContent {
-      forRepository {
-        maven {
-          name = "JCenter"
-          setUrl("https://jcenter.bintray.com/")
-        }
-      }
-      filter {
-        includeModule("org.jetbrains.kotlinx", "kotlinx-html-jvm")
-        includeGroup("org.jetbrains.dokka")
-        includeModule("org.jetbrains", "markdown")
-      }
-    }
+    jcenter()
   }
   pluginManager.withPlugin("java") {
     configure<JavaPluginExtension> {
@@ -62,7 +48,7 @@ subprojects {
         freeCompilerArgs += Dependencies.Kotlin.defaultFreeCompilerArgs
       }
     }
-    if (project.name != "sample") {
+    if (project.name != "happy-sample") {
       configure<KotlinProjectExtension> {
         explicitApi()
       }

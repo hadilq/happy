@@ -19,6 +19,8 @@ plugins {
   kotlin("kapt")
 }
 
+setupPublication()
+
 dependencies {
   implementation(Dependencies.AutoService.annotations)
   kapt(Dependencies.AutoService.processor)

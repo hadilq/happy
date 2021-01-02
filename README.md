@@ -171,10 +171,13 @@ Did you notice the naming? That's the difference.
 
 Download via gradle
 ```groovy
-implementation "com.github.hadilq:happy:$libVersion"
+implementation "com.github.hadilq:happy-annotation:$libVersion"
+kapt "com.github.hadilq:happy-processor:$libVersion"
 ```
 
 where the `libVersion` can be found above in `Maven Central` badge.
+
+Snapshots of the development version are available in [Sonatype's snapshots repository](https://oss.sonatype.org/content/repositories/snapshots).
 
 ## Contribution
 

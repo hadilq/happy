@@ -14,6 +14,13 @@
  * limitations under the License.
 */
 
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    jcenter()
+  }
+}
+
 rootProject.name = "happy"
 include("happy-annotation")
 include("happy-processor")
