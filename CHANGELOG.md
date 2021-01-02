@@ -3,6 +3,8 @@ CHANGE LOG
 
 ## Version 0.0.1
 
+  _2021-01-02_
+
   * Implement `HappyProcessor`. It handles
      - Flat definition of `sealed` classes
      - Nested definition of `sealed` classes
