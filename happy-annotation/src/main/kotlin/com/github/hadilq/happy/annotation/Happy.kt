@@ -16,6 +16,10 @@
 
 package com.github.hadilq.happy.annotation
 
+/***
+ * The usage is similar to [Elvis operator](https://kotlinlang.org/docs/reference/null-safety.html#elvis-operator)
+ * especially for two cases `sealed` classes. For the rest check out the README.md file.
+ */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-public annotation class Happy()
+public annotation class Happy

@@ -19,4 +19,4 @@ package com.github.hadilq.happy.annotation
 @DslMarker
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-public annotation class HappyDslMaker()
+public annotation class HappyDslMaker
