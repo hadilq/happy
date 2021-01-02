@@ -1,3 +1,6 @@
+![Health Check](https://github.com/hadilq/happy/workflows/Health%20Check/badge.svg?branch=main)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hadilq/happy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hadilq/happy)
+
 # Happy
 
 This library provides an annotation to auto-generate a Kotlin DSL for `sealed` classes to make
