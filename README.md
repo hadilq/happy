@@ -59,9 +59,9 @@ fun doJob(): B {
     ...
 }
 ```
-To handle the failure you have three approaches:
+To handle the failure you have three options:
  - You can have another method to fix the failure and replace the `FailedA` with `HappyA`,
-   for instance bring back the default, or in case of `UnAuthorized`
+   for instance bring back the default, or in case of UnAuthorized
    exception can request to authorize. It would be like
 ```kotlin
 fun doJob(): B {
@@ -115,8 +115,8 @@ For instance, if you have a `sealed` class like
 ```kotlin
 sealed class A {
   @Happy
-  class HappyA : A()
-  class OptionOne : A()
+  object HappyA : A()
+  object OptionOne : A()
   class OptionTwo(val why: Int) : A()
 }
 ```
@@ -144,8 +144,8 @@ sealed class A {
    @Happy
    class HappyA : A()
    abstract class SituationOne : A() {
-      class OptionOne : SituationOne()
-      class OptionTwo(val why: Int) : SituationOne()
+      object OptionOne : SituationOne()
+      class OptionTwo(val why: Int, val where: Int) : SituationOne()
    }
 
    abstract class SituationTwo : A() {
@@ -159,7 +159,7 @@ the happy DSL will be like
 fun doJob(): B {
    val result: HappyA = doWork() elseIf {
       SituationOneOptionOne(::handleOptionOne)
-      SituationOneOptionTwo { why -> // The property of `OptionTwo`
+      SituationOneOptionTwo { why, where -> // The properties of `OptionTwo`
          return B.failure(why)
       }
       SituationTwoOptionThree(::handleOptionThree)
