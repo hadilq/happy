@@ -1,5 +1,5 @@
 ![Health Check](https://github.com/hadilq/happy/workflows/Health%20Check/badge.svg?branch=main)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hadilq/happy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hadilq/happy)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hadilq/happy-processor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hadilq/happy-processor)
 
 # Happy
 
