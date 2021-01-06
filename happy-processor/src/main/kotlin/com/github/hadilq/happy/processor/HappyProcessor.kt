@@ -22,6 +22,7 @@ import com.github.hadilq.happy.processor.generate.*
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.metadata.*
+import com.squareup.kotlinpoet.metadata.specs.toTypeSpec
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import javax.annotation.processing.*
@@ -91,41 +92,56 @@ public class HappyProcessor : AbstractProcessor() {
     roundEnv.getElementsAnnotatedWith(Happy::class.java)
       .asSequence()
       .map { it as TypeElement }
-      .forEach { type ->
+      .forEach { happyType ->
         val module = Module(
-          debug = false,
-          logNote = { messager.printMessage(Diagnostic.Kind.NOTE, it, type) },
-          logWarning = { messager.printMessage(Diagnostic.Kind.WARNING, it, type) },
-          logError = { messager.printMessage(Diagnostic.Kind.ERROR, it, type) },
-          getTypeElement = { elementUtils.getTypeElement(it) }
+          logNote = { messager.printMessage(Diagnostic.Kind.NOTE, it, happyType) },
+          logWarning = { messager.printMessage(Diagnostic.Kind.WARNING, it, happyType) },
+          logError = { messager.printMessage(Diagnostic.Kind.ERROR, it, happyType) },
+          typeElement = { elementUtils.getTypeElement(it) },
+          typeName = { typeParams -> asTypeName(typeParams) },
         )
-        val happyKmClass = type.getAnnotation(Metadata::class.java).toImmutableKmClass()
-        val sealedParentKmClass: ImmutableKmClass? = findSealedParentKmClass(happyKmClass, type)
-        if (sealedParentKmClass == null) {
-          messager.printMessage(Diagnostic.Kind.ERROR, "@Happy: parent must be a sealed class!", type)
+        val happyHType = HType(happyType)
+        val sealedParentHType = findSealedParentKmClass(happyHType)
+        if (sealedParentHType == null) {
+          messager.printMessage(Diagnostic.Kind.ERROR, "@Happy: parent must be a sealed class!", happyType)
           return@forEach
         }
         if (module.debug) {
-          messager.printMessage(Diagnostic.Kind.NOTE, "@Happy: parent class! $sealedParentKmClass")
+          messager.printMessage(Diagnostic.Kind.NOTE, "@Happy: parent class! ${sealedParentHType.meta}")
         }
-        val result = module.generateHappyFile(sealedParentKmClass, type, happyKmClass)
+        val result = module.generateHappyFile(sealedParentHType, happyHType)
         result
           .getOrNull()
           ?.writeTo(filer)
           ?: messager.printMessage(
             Diagnostic.Kind.ERROR,
             result.exceptionOrNull()!!.message,
-            type
+            happyType
           )
       }
     return false
   }
 }
 
-private class Module(
-  override val debug: Boolean,
+@KotlinPoetMetadataPreview
+private data class Module(
+  override val debug: Boolean = false,
   override val logNote: (message: String) -> Unit,
   override val logWarning: (message: String) -> Unit,
   override val logError: (message: String) -> Unit,
-  override val getTypeElement: (qualifiedName: String) -> TypeElement
+  override val typeElement: (qualifiedName: String) -> TypeElement,
+  override val typeName: ImmutableKmType?.(typeParams: List<ImmutableKmTypeParameter>) -> TypeName?,
 ) : HappyProcessorModule
+
+@KotlinPoetMetadataPreview
+public data class HType(
+  val element: TypeElement,
+  val meta: ImmutableKmClass = element.getAnnotation(Metadata::class.java).toImmutableKmClass(),
+  val typeSpec: TypeSpec = meta.toTypeSpec(null),
+  val typeParameters: List<TypeVariableName> = typeSpec.typeVariables,
+  val className: TypeName = element.asType().asTypeName(),
+  val qualifiedName: String = meta.name.qualifiedName,
+  val simpleNames: List<String> = meta.name.substringAfterLast("/").split("."),
+  val simpleName: String = qualifiedName.substringAfterLast("."),
+  val packageName: String = meta.name.substringBeforeLast("/").replace("/", "."),
+)

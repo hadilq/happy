@@ -15,44 +15,42 @@
 */
 package com.github.hadilq.happy.processor.generate
 
+import com.github.hadilq.happy.processor.HType
 import com.github.hadilq.happy.processor.di.HappyProcessorModule
-import com.squareup.kotlinpoet.metadata.ImmutableKmClass
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
-import com.squareup.kotlinpoet.metadata.toImmutableKmClass
 import javax.lang.model.element.TypeElement
 
 @KotlinPoetMetadataPreview
 public fun HappyProcessorModule.findCases(
-  sealedParentKmClass: ImmutableKmClass,
-  happyType: TypeElement,
-): Sequence<Pair<List<String>, ImmutableKmClass>> = sealedParentKmClass.sealedSubclasses
+  sealedParentHType: HType,
+  happyHType: HType,
+): Sequence<Pair<List<String>, HType>> = sealedParentHType.meta.sealedSubclasses
   .asSequence()
   .map { Pair(emptyList<String>(), it.qualifiedName) }
-  .mapNestedCases(this, happyType)
+  .mapNestedCases(this, happyHType.element)
 
 @KotlinPoetMetadataPreview
 private fun HappyProcessorModule.findNestedCases(
-  parentKmClass: ImmutableKmClass,
+  parentHType: HType,
   happyType: TypeElement,
   parentsName: List<String>
-): Sequence<Pair<List<String>, ImmutableKmClass>> = parentKmClass.nestedClasses
+): Sequence<Pair<List<String>, HType>> = parentHType.meta.nestedClasses
   .asSequence()
-  .map { Pair(parentsName, "${parentKmClass.qualifiedName}.$it") }
+  .map { Pair(parentsName, "${parentHType.qualifiedName}.$it") }
   .mapNestedCases(this, happyType)
 
 @KotlinPoetMetadataPreview
 private fun Sequence<Pair<List<String>, String>>.mapNestedCases(
   module: HappyProcessorModule,
   happyType: TypeElement,
-): Sequence<Pair<List<String>, ImmutableKmClass>> = this
-  .map { Pair(it.first, module.getTypeElement(it.second)) }
+): Sequence<Pair<List<String>, HType>> = this
+  .map { Pair(it.first, module.typeElement(it.second)) }
   .filter { it.second != happyType }
-  .map { Pair(it.first, it.second.getAnnotation(Metadata::class.java)) }
-  .map { Pair(it.first, it.second.toImmutableKmClass()) }
+  .map { Pair(it.first, HType(it.second)) }
   .flatMap {
     val parentsName = mutableListOf(*it.first.toTypedArray())
     parentsName.add(it.second.simpleName)
-    return@flatMap if (it.second.nestedClasses.isEmpty()) {
+    return@flatMap if (it.second.meta.nestedClasses.isEmpty()) {
       if (module.debug) {
         module.logNote("parentsName: $parentsName")
         module.logNote("found case: ${it.second}")

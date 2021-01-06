@@ -15,45 +15,42 @@
 */
 package com.github.hadilq.happy.processor.generate
 
+import com.github.hadilq.happy.processor.HType
 import com.github.hadilq.happy.processor.di.HappyProcessorModule
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.metadata.ImmutableKmClass
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
-import javax.lang.model.element.TypeElement
 
 @KotlinPoetMetadataPreview
 public fun HappyProcessorModule.generateBuilderFunctions(
-  sealedParentKmClass: ImmutableKmClass,
-  happyType: TypeElement,
-  happyKmClass: ImmutableKmClass,
-  sealedPropertyName: String,
-  resultVarName: String,
-): Sequence<Result<FunSpec>> = findCases(sealedParentKmClass, happyType)
+  sealedParentHType: HType,
+  happyHType: HType,
+): Sequence<Result<FunSpec>> = findCases(sealedParentHType, happyHType)
   .map { (names, caseClass) ->
     val constructorParams = collectConstructorParams(caseClass)
     val (paramsName: List<String>, paramsSpec: List<ParameterSpec>) =
       constructorParams.getOrNull() ?: return@map Result.failure(constructorParams.exceptionOrNull()!!)
-    val blockName = "block"
 
     Result.success(
       FunSpec.builder(names.joinToString(""))
         .addModifiers(KModifier.PUBLIC)
         .addModifiers(KModifier.INLINE)
         .addParameter(
-          blockName, LambdaTypeName.get(
+          BLOCK_NAME, LambdaTypeName.get(
             parameters = paramsSpec,
-            returnType = happyKmClass.className
+            returnType = happyHType.className
           )
         )
         .addCode(
           CodeBlock.of(
             """
               if(parent is %T) {
-                $resultVarName = $blockName(${paramsName.joinToString(", ") { "$sealedPropertyName.$it" }})
+                $RESULT_VAR_NAME = $BLOCK_NAME(${paramsName.joinToString(", ") { "$SEALED_PROPERTY_NAME.$it" }})
               }
-            """.trimIndent(), getTypeElement(caseClass.qualifiedName)
+            """.trimIndent(), typeElement(caseClass.qualifiedName)
           )
         )
         .build()
     )
   }
+
+private const val BLOCK_NAME = "block"

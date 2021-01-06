@@ -15,49 +15,69 @@
 */
 package com.github.hadilq.happy.processor.generate
 
+import com.github.hadilq.happy.processor.HType
 import com.github.hadilq.happy.processor.di.HappyProcessorModule
-import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.metadata.ImmutableKmClass
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.metadata.ImmutableKmValueParameter
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import com.squareup.kotlinpoet.metadata.isPrimary
-import kotlinx.metadata.KmClassifier
 
 @KotlinPoetMetadataPreview
 public fun HappyProcessorModule.collectConstructorParams(
-  caseKmClass: ImmutableKmClass,
-): Result<Pair<List<String>, List<ParameterSpec>>> = caseKmClass
+  caseHType: HType,
+): Result<Pair<List<String>, List<ParameterSpec>>> = caseHType.meta
   .constructors
   .asSequence()
   .filter { it.isPrimary }
   .flatMap { it.valueParameters }
-  .map { param: ImmutableKmValueParameter ->
-    val type = param.type
-    if (type != null && type.classifier is KmClassifier.Class) {
-      val paramType = ClassName.bestGuess((type.classifier as KmClassifier.Class).name.qualifiedName)
-
-      Result.success(
-        Pair(
-          param.name,
-          ParameterSpec.builder(param.name, paramType)
-            .build()
-        )
-      )
-    } else {
-      val message = "@Happy: type of parameters must be class!"
-      logError(message)
-      Result.failure(RuntimeException(message))
+  .flatMap { param: ImmutableKmValueParameter ->
+    when {
+      param.type != null -> {
+        param.type.typeName(caseHType.meta.typeParameters)
+          .generateParamSpecs(param, logError, false)
+      }
+      param.varargElementType != null -> {
+        param.varargElementType.typeName(caseHType.meta.typeParameters)
+          .generateParamSpecs(param, logError, true)
+      }
+      else -> {
+        val message = "@Happy: Unknown error happened!"
+        logError(message)
+        sequenceOf(Result.failure(RuntimeException(message)))
+      }
     }
   }
   .fold(
     Result.success(
       Pair(
         mutableListOf(),
-        mutableListOf()
+        mutableListOf(),
       )
-    ), { acc, pair ->
-      pair.getOrNull()?.first?.let { acc.getOrNull()?.first?.add(it) }
-      pair.getOrNull()?.second?.let { acc.getOrNull()?.second?.add(it) }
-      acc
+    ), { acc, result ->
+      result.getOrNull()?.let { pair ->
+        acc.getOrNull()!!.apply {
+          first.add(pair.first)
+          second.add(pair.second)
+        }
+        acc
+      } ?: Result.failure(result.exceptionOrNull()!!)
     })
+
+@KotlinPoetMetadataPreview
+private fun TypeName?.generateParamSpecs(
+  param: ImmutableKmValueParameter,
+  logError: (message: String) -> Unit,
+  isVararg: Boolean,
+): Sequence<Result<Pair<String, ParameterSpec>>> = this?.let { pair ->
+  val builder = ParameterSpec.builder(param.name, this)
+  if (isVararg) {
+    builder.addModifiers(KModifier.VARARG)
+  }
+  sequenceOf(Result.success(Pair(param.name, builder.build())))
+} ?: run {
+  val message = "@Happy: Unknown error happened!"
+  logError(message)
+  sequenceOf(Result.failure(RuntimeException(message)))
+}
