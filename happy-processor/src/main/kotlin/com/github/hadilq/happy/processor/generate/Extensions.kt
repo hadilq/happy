@@ -15,34 +15,5 @@
 */
 package com.github.hadilq.happy.processor.generate
 
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.metadata.ImmutableKmClass
-import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
-
-@KotlinPoetMetadataPreview
-public val ImmutableKmClass.className: ClassName
-  get() = with(name) { ClassName(packageName, *simpleNames.toTypedArray()) }
-
- public val String.qualifiedName: String
+public val String.qualifiedName: String
   get() = replace("/", ".")
-
- public val String.packageName: String
-  get() = substringBeforeLast("/").replace("/", ".")
-
-public val String.simpleNames: List<String>
-  get() = substringAfterLast("/").split(".")
-
-public val String.simpleName: String
-  get() = qualifiedName.substringAfterLast(".")
-
-@KotlinPoetMetadataPreview
-public val ImmutableKmClass.qualifiedName: String
-  get() = name.qualifiedName
-
-@KotlinPoetMetadataPreview
-public val ImmutableKmClass.simpleNames: List<String>
-  get() = name.simpleNames
-
-@KotlinPoetMetadataPreview
-public val ImmutableKmClass.simpleName: String
-  get() = name.simpleName

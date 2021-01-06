@@ -15,7 +15,7 @@
 */
 package com.github.hadilq.happy.processor.generate
 
-import com.squareup.kotlinpoet.metadata.ImmutableKmClass
+import com.github.hadilq.happy.processor.HType
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import com.squareup.kotlinpoet.metadata.isSealed
 import com.squareup.kotlinpoet.metadata.toImmutableKmClass
@@ -23,21 +23,20 @@ import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 
 @KotlinPoetMetadataPreview
-public fun findSealedParentKmClass(
-  kmClass: ImmutableKmClass,
-  type: TypeElement
-): ImmutableKmClass? {
-  repeat(kmClass.supertypes.size) found@{
-    val superClass: DeclaredType = type.superclass as? DeclaredType ?: return null
+internal fun findSealedParentKmClass(
+  hType: HType,
+): HType? {
+  repeat(hType.meta.supertypes.size) found@{
+    val superClass: DeclaredType = hType.element.superclass as? DeclaredType ?: return null
     val superTypeElement = superClass.asElement() as? TypeElement ?: return null
     if (superTypeElement.qualifiedName.toString() == "java.util.Object") return null
     val supperKmClass = superTypeElement
       .getAnnotation(Metadata::class.java)
       ?.toImmutableKmClass() ?: return null
     return if (supperKmClass.isSealed) {
-      supperKmClass
+      HType(superTypeElement, supperKmClass)
     } else {
-      findSealedParentKmClass(supperKmClass, superTypeElement)
+      findSealedParentKmClass(HType(superTypeElement, supperKmClass))
     }
   }
   return null

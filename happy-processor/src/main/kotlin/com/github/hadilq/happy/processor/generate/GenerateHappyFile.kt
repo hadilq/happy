@@ -16,47 +16,40 @@
 package com.github.hadilq.happy.processor.generate
 
 import com.github.hadilq.happy.annotation.HappyDslMaker
+import com.github.hadilq.happy.processor.HType
 import com.github.hadilq.happy.processor.di.HappyProcessorModule
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.metadata.ImmutableKmClass
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import com.squareup.kotlinpoet.metadata.isInternal
-import javax.lang.model.element.TypeElement
-
-private const val OTHERWISE = "elseIf"
-private const val OTHERWISE_BUILDER = "ElseIfBuilder"
 
 @KotlinPoetMetadataPreview
 public fun HappyProcessorModule.generateHappyFile(
-  sealedParentKmClass: ImmutableKmClass,
-  happyType: TypeElement,
-  happyKmClass: ImmutableKmClass,
+  sealedParentHType: HType,
+  happyHType: HType,
 ): Result<FileSpec> {
-  val sealedParentClassName = sealedParentKmClass.className
-  val happyClassName = happyKmClass.className
-  val otherwiseBuilderName = "${sealedParentClassName.simpleNames.joinToString("")}$OTHERWISE_BUILDER"
-  val sealedPropertyName = "parent"
-  val resultVarName = "result"
+  val otherwiseBuilderName = "${sealedParentHType.simpleNames.joinToString("")}$OTHERWISE_BUILDER"
 
   val classBuilder = TypeSpec.classBuilder(otherwiseBuilderName)
     .addAnnotation(HappyDslMaker::class)
+    .addTypeVariables(sealedParentHType.typeParameters)
     .primaryConstructor(
       FunSpec.constructorBuilder()
-        .addParameter(sealedPropertyName, sealedParentClassName)
+        .addParameter(SEALED_PROPERTY_NAME, sealedParentHType.className)
         .build()
     )
     .addProperty(
-      PropertySpec.builder(sealedPropertyName, sealedParentClassName)
-        .initializer(sealedPropertyName)
+      PropertySpec.builder(SEALED_PROPERTY_NAME, sealedParentHType.className)
+        .initializer(SEALED_PROPERTY_NAME)
         .build()
     )
     .addProperty(
-      PropertySpec.builder(resultVarName, happyClassName, KModifier.PUBLIC, KModifier.LATEINIT)
+      PropertySpec.builder(RESULT_VAR_NAME, happyHType.className, KModifier.PUBLIC, KModifier.LATEINIT)
         .mutable(true)
         .build()
     )
 
-  generateBuilderFunctions(sealedParentKmClass, happyType, happyKmClass, sealedPropertyName, resultVarName)
+  generateBuilderFunctions(sealedParentHType, happyHType)
     .forEach {
       val funSpec = it.getOrNull() ?: return Result.failure(it.exceptionOrNull()!!)
       classBuilder.addFunction(funSpec)
@@ -66,8 +59,9 @@ public fun HappyProcessorModule.generateHappyFile(
     .addModifiers(KModifier.PUBLIC)
     .addModifiers(KModifier.INFIX)
     .addModifiers(KModifier.INLINE)
-    .receiver(sealedParentClassName)
-    .returns(happyClassName)
+    .addTypeVariables(sealedParentHType.typeParameters)
+    .receiver(sealedParentHType.className)
+    .returns(happyHType.className)
 
   val justTwoCases = classBuilder.funSpecs.size == 1
   if (justTwoCases) {
@@ -80,20 +74,27 @@ public fun HappyProcessorModule.generateHappyFile(
             if (this is %T) {
               return this
             }
-            val $sealedPropertyName = this
-            var $resultVarName: %T? = null
+            val $SEALED_PROPERTY_NAME = this
+            var $RESULT_VAR_NAME: %T? = null
 
-          """.trimIndent(), happyType, happyType
+          """.trimIndent(), happyHType.className, happyHType.className
         )
       )
       .addCode(justTwoCasesFun.body)
       .addStatement("")
-      .addStatement("return $resultVarName!!")
+      .addStatement("return $RESULT_VAR_NAME!!")
   } else {
     val buildFunName = "build"
+    val builderClassName =
+      if (sealedParentHType.typeParameters.isNotEmpty()) {
+        ClassName(sealedParentHType.packageName, otherwiseBuilderName)
+          .parameterizedBy(sealedParentHType.typeParameters)
+      } else {
+        ClassName(sealedParentHType.packageName, otherwiseBuilderName)
+      }
     funBuilder.addParameter(
       buildFunName, LambdaTypeName.get(
-        receiver = ClassName(sealedParentClassName.packageName, otherwiseBuilderName),
+        receiver = builderClassName,
         returnType = Unit::class.asTypeName()
       )
     ).addCode(
@@ -106,12 +107,12 @@ public fun HappyProcessorModule.generateHappyFile(
             builder.$buildFunName()
             return builder.result
           }
-        """.trimIndent(), happyType
+        """.trimIndent(), happyHType.className
       )
     )
   }
 
-  if (happyKmClass.isInternal) {
+  if (happyHType.meta.isInternal) {
     classBuilder.addModifiers(KModifier.INTERNAL)
     funBuilder.addModifiers(KModifier.INTERNAL)
   }
@@ -119,7 +120,7 @@ public fun HappyProcessorModule.generateHappyFile(
   val typeSpec = classBuilder.build()
   val funSpec = funBuilder.build()
 
-  val fileSpecBuilder = FileSpec.builder(sealedParentClassName.packageName, otherwiseBuilderName)
+  val fileSpecBuilder = FileSpec.builder(sealedParentHType.packageName, otherwiseBuilderName)
     .indent("  ")
     .addComment("Code generated by happy processor. Do not edit.")
     .addFunction(funSpec)
@@ -130,3 +131,9 @@ public fun HappyProcessorModule.generateHappyFile(
 
   return Result.success(fileSpecBuilder.build())
 }
+
+private const val OTHERWISE = "elseIf"
+private const val OTHERWISE_BUILDER = "ElseIfBuilder"
+internal const val SEALED_PROPERTY_NAME = "parent"
+internal const val RESULT_VAR_NAME = "result"
+
