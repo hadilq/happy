@@ -3,6 +3,8 @@ CHANGE LOG
 
 ## Version 0.0.2
 
+  _2021_01_06_
+
   * Support Generics
 
 ## Version 0.0.1
