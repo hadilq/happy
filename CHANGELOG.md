@@ -1,6 +1,10 @@
 CHANGE LOG
 ===
 
+## Version 0.0.2
+
+  * Support Generics
+
 ## Version 0.0.1
 
   _2021-01-02_
