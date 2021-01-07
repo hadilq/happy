@@ -28,14 +28,21 @@ fun doWork(): Result<Unit> {
     ::validate elseIf
     {
       InvalidEmailAddress { message -> return Failure(message) }
-      EmptySubject { message -> return Failure(message) }
+      EmptySubject(::fixEmptySubject)
       EmptyBody { message -> return Failure(message) }
     } into
     ::send elseIf
     {
       IOFailure { error -> return Failure(error.message ?: "") }
       Timeout { error -> return Failure(error.message ?: "") }
-      UnAuthorized { error -> return Failure(error.message ?: "") }
+      UnAuthorized { validatedEmail, _ ->
+        validatedEmail into
+          ::authorizeAndSend elseIf
+          {
+            return Failure(it)
+          } into
+          { SendSuccess(validatedEmail.email) }
+      }
     } into
     { Success(Unit) }
 }
@@ -67,13 +74,17 @@ fun validate(input: Success<Email>): ValidationResult {
       InvalidEmailAddress("Invalid email address! `To` is ${email.to}")
     }
     email.subject.isBlank() -> {
-      EmptySubject("Subject must not be blank")
+      EmptySubject(email, "Subject must not be blank")
     }
     email.body.isBlank() -> {
       EmptyBody("Body must not be blank")
     }
     else -> ValidateSuccess(email)
   }
+}
+
+fun fixEmptySubject(email: Email, errorMessage: String): ValidateSuccess {
+  return ValidateSuccess(email.copy(subject = "NO_SUBJECT"))
 }
 
 // Send the email (typically this would have an unhappy path too)
@@ -87,7 +98,17 @@ fun send(input: ValidateSuccess): SendResult {
   } catch (exception: TimeoutException) {
     Timeout(exception)
   } catch (exception: UnAuthorizedException) {
-    UnAuthorized(exception)
+    UnAuthorized(input, exception)
+  }
+}
+
+fun authorizeAndSend(input: ValidateSuccess): Result<Email> {
+  val email = input.email
+  return try {
+    println("Authorize and send again to ${email.to}, WHFFF!")
+    Success(email)
+  } catch (throwable: Throwable) {
+    Failure(throwable.message ?: "")
   }
 }
 
@@ -102,7 +123,7 @@ sealed class ValidationResult
 @Happy
 data class ValidateSuccess(val email: Email) : ValidationResult()
 data class InvalidEmailAddress(val errorMessage: String) : ValidationResult()
-data class EmptySubject(val errorMessage: String) : ValidationResult()
+data class EmptySubject(val email: Email, val errorMessage: String) : ValidationResult()
 data class EmptyBody(val errorMessage: String) : ValidationResult()
 
 sealed class SendResult
@@ -111,7 +132,7 @@ sealed class SendResult
 data class SendSuccess(val email: Email) : SendResult()
 data class IOFailure(val error: IOException) : SendResult()
 data class Timeout(val error: TimeoutException) : SendResult()
-data class UnAuthorized(val error: UnAuthorizedException) : SendResult()
+data class UnAuthorized(val validatedEmail: ValidateSuccess, val error: UnAuthorizedException) : SendResult()
 
 
 class UnAuthorizedException : Throwable()
