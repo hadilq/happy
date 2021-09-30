@@ -17,7 +17,7 @@
 object Dependencies {
 
   object AutoService {
-    private const val version = "1.0-rc7"
+    private const val version = "1.0"
     const val annotations = "com.google.auto.service:auto-service-annotations:$version"
     const val processor = "com.google.auto.service:auto-service:$version"
   }
@@ -36,14 +36,14 @@ object Dependencies {
   }
 
   object KotlinPoet {
-    private const val version = "1.7.2"
+    private const val version = "1.9.0"
     const val kotlinPoet = "com.squareup:kotlinpoet:$version"
     const val metadata = "com.squareup:kotlinpoet-metadata-specs:$version"
   }
 
   object Testing {
-    const val compileTesting = "com.github.tschuchortdev:kotlin-compile-testing:1.3.1"
+    const val compileTesting = "com.github.tschuchortdev:kotlin-compile-testing:1.4.4"
     const val junit = "junit:junit:4.13.1"
-    const val truth = "com.google.truth:truth:1.1"
+    const val truth = "com.google.truth:truth:1.1.3"
   }
 }
