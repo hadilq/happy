@@ -55,15 +55,16 @@ public fun HappyProcessorModule.collectConstructorParams(
         mutableListOf(),
         mutableListOf(),
       )
-    ), { acc, result ->
-      result.getOrNull()?.let { pair ->
-        acc.getOrNull()!!.apply {
-          first.add(pair.first)
-          second.add(pair.second)
-        }
-        acc
-      } ?: Result.failure(result.exceptionOrNull()!!)
-    })
+    )
+  ) { acc: Result<Pair<MutableList<String>, MutableList<ParameterSpec>>>, result ->
+    result.getOrNull()?.let { pair ->
+      acc.getOrNull()!!.apply {
+        first.add(pair.first)
+        second.add(pair.second)
+      }
+      acc
+    } ?: Result.failure(result.exceptionOrNull()!!)
+  }
 
 @KotlinPoetMetadataPreview
 private fun TypeName?.generateParamSpecs(
