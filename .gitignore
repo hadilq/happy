@@ -72,7 +72,6 @@ hs_err_pid*
 *.iml
 *.ipr
 *.iws
-.idea/
 
 
 ###Eclipse###
