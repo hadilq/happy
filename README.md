@@ -170,6 +170,51 @@ fun doJob(): B {
 ```
 Did you notice the naming? That's the difference.
 
+# Elvis
+Since `0.0.3`, the Happy processor generates `elvis` function too, to have a
+more typesafe experience. The only disadvantage of `elvis` function is that it
+isn't an `infix` function for more than two cases sealed classes, so a user who
+wants to practice Happy Railway may not be satisfied. Check out [RailwayTest.kt](https://github.com/hadilq/happy/blob/main/happy-sample/src/test/kotlin/com/github/hadilq/happy/sample/RailwayTest.kt)
+and [RailwayElvisTest.kt](https://github.com/hadilq/happy/blob/main/happy-sample/src/test/kotlin/com/github/hadilq/happy/sample/RailwayElvisTest.kt)
+for more comparison. Anyway! For this `sealed class`
+```kotlin
+sealed class A {
+  @Happy
+  object HappyA : A()
+  object OptionOne : A()
+  class OptionTwo(val why: Int) : A()
+}
+```
+it looks like this
+```kotlin
+fun doJob(): B {
+  val result: HappyA = doWork().elvis(
+      OptionOne = ::handleOptionOne,
+      OptionTwo = { failure: OptionTwo ->
+        return B.failure(failure.message)
+      },
+  )
+  ...
+}
+```
+Also, for two cases like
+```kotlin
+sealed class A {
+   @Happy
+   object HappyA : A()
+   object OptionOne : A()
+}
+```
+it's an `infix` function so it's so similar to `elseIf` counterpart.
+```kotlin
+fun doJob(): B {
+  val result: HappyA = doWork() elvis { failure: OptionOne ->
+    return B.failure(failure.message)
+  }
+  ...
+}
+```
+
 ## Download
 
 Download via gradle
@@ -178,7 +223,7 @@ implementation "com.github.hadilq:happy-annotation:$libVersion"
 kapt "com.github.hadilq:happy-processor:$libVersion"
 ```
 
-where the `libVersion` can be found above in `Maven Central` badge.
+where you can find the `libVersion` in the [Releases](https://github.com/hadilq/happy/releases) page of this repository.
 
 Snapshots of the development version are available in [Sonatype's snapshots repository](https://oss.sonatype.org/content/repositories/snapshots).
 

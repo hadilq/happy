@@ -26,18 +26,14 @@ import javax.lang.model.type.DeclaredType
 internal fun findSealedParentKmClass(
   hType: HType,
 ): HType? {
-  repeat(hType.meta.supertypes.size) found@{
-    val superClass: DeclaredType = hType.element.superclass as? DeclaredType ?: return null
-    val superTypeElement = superClass.asElement() as? TypeElement ?: return null
-    if (superTypeElement.qualifiedName.toString() == "java.util.Object") return null
-    val supperKmClass = superTypeElement
-      .getAnnotation(Metadata::class.java)
-      ?.toImmutableKmClass() ?: return null
-    return if (supperKmClass.isSealed) {
-      HType(superTypeElement, supperKmClass)
-    } else {
-      findSealedParentKmClass(HType(superTypeElement, supperKmClass))
-    }
+  val isSealed = hType.meta.isSealed
+  val superClass: DeclaredType = hType.element.superclass as? DeclaredType ?: return if (isSealed) hType else null
+  val superTypeElement = superClass.asElement() as? TypeElement ?: return if (isSealed) hType else null
+  if (superTypeElement.qualifiedName.toString() == "java.util.Object") {
+    return if (isSealed) hType else null
   }
-  return null
+  val supperKmClass = superTypeElement
+    .getAnnotation(Metadata::class.java)
+    ?.toImmutableKmClass() ?: return if (isSealed) hType else null
+  return findSealedParentKmClass(HType(superTypeElement, supperKmClass))
 }

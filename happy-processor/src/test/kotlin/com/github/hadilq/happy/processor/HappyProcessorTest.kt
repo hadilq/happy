@@ -54,6 +54,11 @@ class HappyProcessorTest {
         }
         return result!!
       }
+
+      public inline infix fun A.elvis(FailedA: (block: A.FailedA) -> A.HappyA): A.HappyA = when(this) {
+        is A.HappyA -> this
+        is A.FailedA -> FailedA(this)
+      }
     """.trimIndent()
     doTest(sourceFileName, sourceCode, generatedFileName, generatedCode)
   }
@@ -88,6 +93,13 @@ class HappyProcessorTest {
           builder.build()
           return builder.result
         }
+      }
+
+      public inline fun A.elvis(OptionOne: (block: A.OptionOne) -> A.HappyA,
+          OptionTwo: (block: A.OptionTwo) -> A.HappyA): A.HappyA = when(this) {
+        is A.HappyA -> this
+        is A.OptionOne -> OptionOne(this)
+        is A.OptionTwo -> OptionTwo(this)
       }
 
       @HappyDslMaker
@@ -143,6 +155,11 @@ class HappyProcessorTest {
         }
         return result!!
       }
+
+      public inline infix fun A.elvis(FailedA: (block: A.FailedA) -> A.HappyA): A.HappyA = when(this) {
+        is A.HappyA -> this
+        is A.FailedA -> FailedA(this)
+      }
     """.trimIndent()
     doTest(sourceFileName, sourceCode, generatedFileName, generatedCode)
   }
@@ -178,6 +195,13 @@ class HappyProcessorTest {
           builder.build()
           return builder.result
         }
+      }
+
+      public inline fun A.elvis(OptionOne: (block: A.OptionOne) -> A.HappyA,
+          OptionTwo: (block: A.OptionTwo) -> A.HappyA): A.HappyA = when(this) {
+        is A.HappyA -> this
+        is A.OptionOne -> OptionOne(this)
+        is A.OptionTwo -> OptionTwo(this)
       }
 
       @HappyDslMaker
@@ -231,6 +255,11 @@ class HappyProcessorTest {
         }
         return result!!
       }
+
+      public inline infix fun A.elvis(FailedA: (block: A.FailedA) -> A.HappyA): A.HappyA = when(this) {
+        is A.HappyA -> this
+        is A.FailedA -> FailedA(this)
+      }
     """.trimIndent()
     doTest(sourceFileName, sourceCode, generatedFileName, generatedCode)
   }
@@ -268,6 +297,13 @@ class HappyProcessorTest {
         }
       }
 
+      public inline fun A.elvis(OptionOne: (block: A.OptionOne) -> A.HappyA,
+          OptionTwo: (block: A.OptionTwo) -> A.HappyA): A.HappyA = when(this) {
+        is A.HappyA -> this
+        is A.OptionOne -> OptionOne(this)
+        is A.OptionTwo -> OptionTwo(this)
+      }
+
       @HappyDslMaker
       public class AElseIfBuilder(
         public val parent: A
@@ -298,7 +334,7 @@ class HappyProcessorTest {
     sourceFileName: String,
     sourceCode: String,
     generatedFileName: String,
-    generatedCode: String
+    expectedGeneratedCode: String
   ) {
     val source = SourceFile.kotlin(
       sourceFileName,
@@ -316,8 +352,8 @@ class HappyProcessorTest {
     val generatedFile = File(generatedSourcesDir, generatedFileName)
     assertThat(generatedFile.exists()).isTrue()
     //language=kotlin
-    assertThat(generatedFile.readText().trim()).isEqualTo(
-      generatedCode
-    )
+    val generatedCode = generatedFile.readText().trim()
+    println(generatedCode)
+    assertThat(generatedCode).isEqualTo(expectedGeneratedCode)
   }
 }
