@@ -22,9 +22,10 @@ import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 
 @KotlinPoetMetadataPreview
 public fun HappyProcessorModule.generateBuilderFunctions(
-  sealedParentHType: HType,
   happyHType: HType,
-): Sequence<Result<FunSpec>> = findCases(sealedParentHType, happyHType)
+  cases: List<Pair<List<String>, HType>>,
+): Sequence<Result<FunSpec>> = cases
+  .asSequence()
   .map { (names, caseClass) ->
     val constructorParams = collectConstructorParams(caseClass)
     val (paramsName: List<String>, paramsSpec: List<ParameterSpec>) =
@@ -43,7 +44,7 @@ public fun HappyProcessorModule.generateBuilderFunctions(
         .addCode(
           CodeBlock.of(
             """
-              if(parent is %T) {
+              if($SEALED_PROPERTY_NAME is %T) {
                 $RESULT_VAR_NAME = $BLOCK_NAME(${paramsName.joinToString(", ") { "$SEALED_PROPERTY_NAME.$it" }})
               }
             """.trimIndent(), typeElement(caseClass.qualifiedName)
@@ -52,5 +53,3 @@ public fun HappyProcessorModule.generateBuilderFunctions(
         .build()
     )
   }
-
-private const val BLOCK_NAME = "block"

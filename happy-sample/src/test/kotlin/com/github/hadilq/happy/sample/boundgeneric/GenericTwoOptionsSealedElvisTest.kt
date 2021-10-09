@@ -13,44 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.github.hadilq.happy.sample
+package com.github.hadilq.happy.sample.boundgeneric
 
+import com.github.hadilq.happy.annotation.Happy
 import org.junit.Test
 
-class SampleTest {
+class GenericTwoOptionsSealedElvisTest {
 
   @Test
-  fun happyTest() {
-    val result: HappyA = happy() elseIf {
+  fun happyPathTest() {
+    val result: Success<Int> = success() elvis {
       assert(false)
       return
     }
   }
 
   @Test
-  fun optionTowTest() {
-    val result: HappyA = otherOption() elseIf {
+  fun failureTest() {
+    val result: Success<Int> = failure() elvis {
       assert(true)
       return
     }
   }
 
-  @Test
-  fun happyElvisTest() {
-    val result: HappyA = happy() elvis {
-      assert(false)
-      return
-    }
-  }
+  private fun success(): Result<Int> = Success(2)
 
-  @Test
-  fun optionTowElvisTest() {
-    val result: HappyA = otherOption() elvis {
-      assert(true)
-      return
-    }
-  }
-
-  private fun happy(): A = HappyA(1)
-  private fun otherOption(): A = OptionOne
+  private fun failure(): Result<Int> = Failure("")
 }
+
+sealed class ResultE<T : Number>
+
+@Happy
+data class SuccessE<T : Number>(val value: T) : ResultE<T>()
+data class FailureE<T : Number>(val errorMessage: String) : ResultE<T>()

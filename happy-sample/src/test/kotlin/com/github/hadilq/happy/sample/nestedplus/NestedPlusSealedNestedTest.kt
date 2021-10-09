@@ -53,14 +53,14 @@ class NestedPlusSealedNestedTest {
   private fun optionTwo(): A = A.B.OptionTwo(1, 2, 3)
 
   sealed class A {
-    abstract class B : A() {
+    sealed class B : A() {
       @Happy
       data class HappyA(val a: Int) : B()
       object OptionOne : B()
       data class OptionTwo(val one: Int, val two: Int, val three: Int) : B()
     }
 
-    abstract class C : A() {
+    sealed class C : A() {
       data class OptionThree(val one: Int, val two: Int) : C()
       object OptionFour : C()
     }

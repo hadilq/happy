@@ -71,8 +71,8 @@ private fun TypeName?.generateParamSpecs(
   param: ImmutableKmValueParameter,
   logError: (message: String) -> Unit,
   isVararg: Boolean,
-): Sequence<Result<Pair<String, ParameterSpec>>> = this?.let { pair ->
-  val builder = ParameterSpec.builder(param.name, this)
+): Sequence<Result<Pair<String, ParameterSpec>>> = this?.let { type ->
+  val builder = ParameterSpec.builder(param.name, type)
   if (isVararg) {
     builder.addModifiers(KModifier.VARARG)
   }

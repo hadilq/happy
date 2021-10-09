@@ -18,51 +18,67 @@ package com.github.hadilq.happy.sample.nestedplus
 import com.github.hadilq.happy.annotation.Happy
 import org.junit.Test
 
-class NestedPlusSealedTest {
+class NestedPlusSealedNestedElvisTest {
 
   @Test
   fun optionOneTest() {
-    val result: A.B.HappyA = optionOne() elseIf {
-      BOptionOne {
+    val result: A.B.HappyA = optionOne().elvis(
+      BOptionOne = {
         assert(true)
         return
-      }
-      BOptionTwo { _, _, _ ->
+      },
+      BOptionTwo = {
+        assert(false)
+        return
+      },
+      COptionThree = {
+        assert(false)
+        return
+      },
+      COptionFour = {
         assert(false)
         return
       }
-    }
+    )
   }
 
   @Test
   fun optionTwoTest() {
-    val result: A.B.HappyA = optionTwo() elseIf {
-      BOptionOne {
+    val result: A.B.HappyA = optionTwo().elvis(
+      BOptionOne = {
+        assert(false)
+        return
+      },
+      BOptionTwo = {
+        assert(true)
+        return
+      },
+      COptionThree = {
+        assert(false)
+        return
+      },
+      COptionFour = {
         assert(false)
         return
       }
-      BOptionTwo { _, _, _ ->
-        assert(true)
-        return
-      }
-    }
+    )
   }
 
   private fun optionOne(): A = A.B.OptionOne
 
   private fun optionTwo(): A = A.B.OptionTwo(1, 2, 3)
-}
 
-sealed class A {
-  sealed class B : A() {
-    @Happy
-    data class HappyA(val a: Int) : B()
-    object OptionOne : B()
-    data class OptionTwo(val one: Int, val two: Int, val three: Int) : B()
-  }
+  sealed class A {
+    sealed class B : A() {
+      @Happy
+      data class HappyA(val a: Int) : B()
+      object OptionOne : B()
+      data class OptionTwo(val one: Int, val two: Int, val three: Int) : B()
+    }
 
-  sealed class C : A() {
-    data class OptionThree(val one: Int, val two: Int) : C()
-    object OptionFour : C()
+    sealed class C : A() {
+      data class OptionThree(val one: Int, val two: Int) : C()
+      object OptionFour : C()
+    }
   }
 }

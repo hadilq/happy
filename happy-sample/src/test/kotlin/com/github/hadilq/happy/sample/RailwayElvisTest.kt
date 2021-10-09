@@ -8,7 +8,7 @@ import java.util.concurrent.TimeoutException
 /**
  * This is a modified version of https://gist.github.com/antonyharfield/1928d02a1163cf115d701deca5b99f63
  */
-class RailwayTest {
+class RailwayElvisTest {
 
   @Test
   fun happyPathTest() {
@@ -19,34 +19,35 @@ class RailwayTest {
 
   // The sample method that needs to compose the processes
   private fun doWork(input: List<String>): Result<Unit> {
-    return input into
-      ::parse elseIf
+    return ((input into
+      ::parse elvis
       {
         return Failure("Cannot parse email")
       } into
-      ::validate elseIf
-      {
-        InvalidEmailAddress { message -> return Failure(message) }
-        EmptySubject(::fixEmptySubject)
-        EmptyBody { message -> return Failure(message) }
-      } into
-      ::send elseIf
-      {
-        IOFailure { error -> return Failure(error.message ?: "") }
-        Timeout { error -> return Failure(error.message ?: "") }
-        UnAuthorized { validatedEmail, _ ->
-          validatedEmail into
-            ::authorizeAndSend elseIf
-            {
-              return Failure(it)
-            } into
-            { SendSuccess(validatedEmail.email) }
-        }
-      } into
+      ::validate
+      ).elvis(
+        InvalidEmailAddress = { invalidEmailAddress -> return Failure(invalidEmailAddress.errorMessage) },
+        EmptySubject = ::fixEmptySubject,
+        EmptyBody = { emptyBody -> return Failure(emptyBody.errorMessage) },
+      ) into
+      ::send
+      ).elvis(
+        IOFailure = { ioFailure -> return Failure(ioFailure.error.message ?: "") },
+        Timeout = { timeout -> return Failure(timeout.error.message ?: "") },
+        UnAuthorized = { unauthorized ->
+          (unauthorized.validatedEmail into
+            ::authorizeAndSend).elvis { failure ->
+            return Failure(failure.errorMessage)
+          } into
+            { success: Success<Email> ->
+              SendSuccess(success.value)
+            }
+        },
+      ) into
       { Success(Unit) }
   }
 
-  inline infix fun <T, R> T.into(block: (T) -> R): R {
+  private inline infix fun <T, R> T.into(block: (T) -> R): R {
     return block(this)
   }
 
@@ -56,17 +57,17 @@ class RailwayTest {
     val body: String
   )
 
-  fun input() = listOf("@sampleTo", "sampleSubject", "sampleBody")
+  private fun input() = listOf("@sampleTo", "sampleSubject", "sampleBody")
 
   // Parse the lines of input to an Email object
-  fun parse(inputs: List<String>): Result<Email> =
+  private fun parse(inputs: List<String>): Result<Email> =
     if (inputs.size == 3)
       Success(Email(to = inputs[0], subject = inputs[1], body = inputs[2]))
     else
       Failure("Unexpected end of input")
 
   // Validate Email
-  fun validate(input: Success<Email>): ValidationResult {
+  private fun validate(input: Success<Email>): ValidationResult {
     val email = input.value
     return when {
       !email.to.contains("@") -> {
@@ -82,8 +83,8 @@ class RailwayTest {
     }
   }
 
-  private fun fixEmptySubject(email: Email, errorMessage: String): ValidateSuccess {
-    return ValidateSuccess(email.copy(subject = "NO_SUBJECT"))
+  private fun fixEmptySubject(emptySubject: EmptySubject): ValidateSuccess {
+    return ValidateSuccess(emptySubject.email.copy(subject = "NO_SUBJECT"))
   }
 
   // Send the email (typically this would have an unhappy path too)
