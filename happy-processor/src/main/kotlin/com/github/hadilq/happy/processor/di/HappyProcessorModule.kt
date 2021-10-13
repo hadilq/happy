@@ -16,9 +16,9 @@
 package com.github.hadilq.happy.processor.di
 
 import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.metadata.ImmutableKmType
-import com.squareup.kotlinpoet.metadata.ImmutableKmTypeParameter
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
+import kotlinx.metadata.KmType
+import kotlinx.metadata.KmTypeParameter
 import javax.lang.model.element.TypeElement
 
 public interface HappyProcessorModule {
@@ -29,5 +29,5 @@ public interface HappyProcessorModule {
   public val typeElement: (qualifiedName: String) -> TypeElement
 
   @KotlinPoetMetadataPreview
-  public val typeName: ImmutableKmType?.(typeParams: List<ImmutableKmTypeParameter>) -> TypeName?
+  public val typeName: KmType?.(typeParams: List<KmTypeParameter>) -> TypeName?
 }

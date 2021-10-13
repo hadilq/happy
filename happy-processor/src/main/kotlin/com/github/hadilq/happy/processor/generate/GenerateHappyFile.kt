@@ -115,7 +115,7 @@ public fun HappyProcessorModule.generateHappyFile(
 
   val elvisFunBuilder = generateElvisFunction(sealedParentHType, happyHType, cases)
 
-  if (happyHType.meta.isInternal) {
+  if (happyHType.meta.flags.isInternal) {
     classBuilder.addModifiers(KModifier.INTERNAL)
     otherwiseFunBuilder.addModifiers(KModifier.INTERNAL)
     elvisFunBuilder.addModifiers(KModifier.INTERNAL)

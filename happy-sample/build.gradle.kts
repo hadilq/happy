@@ -45,6 +45,7 @@ kapt {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
   outputs.cacheIf { false }
   kotlinOptions {
+    suppressWarnings = true
     @Suppress("SuspiciousCollectionReassignment")
     freeCompilerArgs += "-Xopt-in=kotlin.ExperimentalStdlibApi"
   }

@@ -20,9 +20,9 @@ import com.github.hadilq.happy.processor.di.HappyProcessorModule
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.metadata.ImmutableKmValueParameter
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import com.squareup.kotlinpoet.metadata.isPrimary
+import kotlinx.metadata.KmValueParameter
 
 @KotlinPoetMetadataPreview
 public fun HappyProcessorModule.collectConstructorParams(
@@ -32,7 +32,7 @@ public fun HappyProcessorModule.collectConstructorParams(
   .asSequence()
   .filter { it.isPrimary }
   .flatMap { it.valueParameters }
-  .flatMap { param: ImmutableKmValueParameter ->
+  .flatMap { param: KmValueParameter ->
     when {
       param.type != null -> {
         param.type.typeName(caseHType.meta.typeParameters)
@@ -68,7 +68,7 @@ public fun HappyProcessorModule.collectConstructorParams(
 
 @KotlinPoetMetadataPreview
 private fun TypeName?.generateParamSpecs(
-  param: ImmutableKmValueParameter,
+  param: KmValueParameter,
   logError: (message: String) -> Unit,
   isVararg: Boolean,
 ): Sequence<Result<Pair<String, ParameterSpec>>> = this?.let { type ->

@@ -4,16 +4,16 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeVariableName
-import com.squareup.kotlinpoet.metadata.ImmutableKmType
-import com.squareup.kotlinpoet.metadata.ImmutableKmTypeParameter
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import kotlinx.metadata.KmClassifier
+import kotlinx.metadata.KmType
+import kotlinx.metadata.KmTypeParameter
 
 @KotlinPoetMetadataPreview
-public fun ImmutableKmType?.asTypeName(
-  typeParams: List<ImmutableKmTypeParameter>,
+public fun KmType?.asTypeName(
+  typeParams: List<KmTypeParameter>,
 ): TypeName? {
-  val type: ImmutableKmType = this ?: return null
+  val type: KmType = this ?: return null
   return when (val classifier = type.classifier) {
     is KmClassifier.Class -> {
       if (type.arguments.isEmpty()) {

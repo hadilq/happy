@@ -17,6 +17,7 @@
 plugins {
   kotlin("jvm")
   kotlin("kapt")
+  id("com.google.devtools.ksp") version Dependencies.Ksp.version
 }
 
 setupPublication()
@@ -27,18 +28,30 @@ dependencies {
   compileOnly(Dependencies.Incap.annotations)
   kapt(Dependencies.Incap.processor)
 
+  compileOnly(Dependencies.Ksp.ksp)
+  compileOnly(Dependencies.Ksp.api)
+  compileOnly(Dependencies.Kotlin.compilerEmbeddable)
+
   implementation(Dependencies.KotlinPoet.kotlinPoet)
-  implementation(Dependencies.KotlinPoet.metadata)
+  implementation(Dependencies.KotlinPoet.ksp)
   implementation(project(":happy-annotation"))
 
+  testImplementation(Dependencies.Ksp.ksp)
+  testImplementation(Dependencies.Ksp.api)
+  testImplementation(Dependencies.Kotlin.compilerEmbeddable)
   testImplementation(Dependencies.Testing.compileTesting)
+  testImplementation(Dependencies.Testing.compileTestingKsp)
   testImplementation(Dependencies.Testing.truth)
   testImplementation(Dependencies.Testing.junit)
+  testImplementation(Dependencies.Kotlin.reflect)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
   outputs.cacheIf { false }
   kotlinOptions {
-    freeCompilerArgs += listOf("-Xallow-result-return-type")
+    freeCompilerArgs += listOf(
+      "-Xallow-result-return-type",
+      "-Xopt-in=com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview"
+    )
   }
 }

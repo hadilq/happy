@@ -23,6 +23,7 @@ pluginManagement {
 
 rootProject.name = "happy"
 include("happy-annotation")
+include("happy-ksp")
 include("happy-processor")
 include("happy-sample")
 

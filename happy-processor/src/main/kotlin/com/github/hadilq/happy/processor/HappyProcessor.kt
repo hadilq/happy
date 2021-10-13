@@ -23,6 +23,10 @@ import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.metadata.*
 import com.squareup.kotlinpoet.metadata.specs.toTypeSpec
+import kotlinx.metadata.KmClass
+import kotlinx.metadata.KmType
+import kotlinx.metadata.KmTypeParameter
+import kotlinx.metadata.jvm.KotlinClassMetadata
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import javax.annotation.processing.*
@@ -130,13 +134,15 @@ private data class Module(
   override val logWarning: (message: String) -> Unit,
   override val logError: (message: String) -> Unit,
   override val typeElement: (qualifiedName: String) -> TypeElement,
-  override val typeName: ImmutableKmType?.(typeParams: List<ImmutableKmTypeParameter>) -> TypeName?,
+  override val typeName: KmType?.(typeParams: List<KmTypeParameter>) -> TypeName?,
 ) : HappyProcessorModule
 
 @KotlinPoetMetadataPreview
 public data class HType(
   val element: TypeElement,
-  val meta: ImmutableKmClass = element.getAnnotation(Metadata::class.java).toImmutableKmClass(),
+  val meta: KmClass = element.getAnnotation(Metadata::class.java)
+    .toKotlinClassMetadata<KotlinClassMetadata.Class>()
+    .toKmClass(),
   val typeSpec: TypeSpec = meta.toTypeSpec(null),
   val typeParameters: List<TypeVariableName> = typeSpec.typeVariables,
   val className: TypeName = element.asType().asTypeName(),
