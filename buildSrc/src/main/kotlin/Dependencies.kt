@@ -41,6 +41,7 @@ object Dependencies {
     const val version = "1.5.30-1.0.0"
     const val ksp = "com.google.devtools.ksp:symbol-processing:$version"
     const val api = "com.google.devtools.ksp:symbol-processing-api:$version"
+    const val plugin = "com.google.devtools.ksp"
   }
 
   object KotlinPoet {

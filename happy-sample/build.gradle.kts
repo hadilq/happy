@@ -15,31 +15,26 @@
 */
 
 plugins {
+  id(Dependencies.Ksp.plugin) version Dependencies.Ksp.version
   kotlin("jvm")
   kotlin("kapt")
 }
 
+val ksp = findProperty("happy.ksp.enable")?.toString()?.toBoolean() ?: false
 
 dependencies {
-  kapt(project(":happy-processor"))
+  if (ksp) {
+    ksp(project(":happy-processor-ks"))
+    kspTest(project(":happy-processor-ks"))
+  } else {
+    kapt(project(":happy-processor"))
+    kaptTest(project(":happy-processor"))
+  }
   compileOnly(project(":happy-annotation"))
 
-  kaptTest(project(":happy-processor"))
   testCompileOnly(project(":happy-annotation"))
   testImplementation(Dependencies.Testing.junit)
   testImplementation(Dependencies.Testing.truth)
-}
-
-val generatedAnnotation = if (JavaVersion.current().isJava10Compatible) {
-  "javax.annotation.processing.Generated"
-} else {
-  "javax.annotation.Generated"
-}
-
-kapt {
-  arguments {
-    arg("happy.generated", generatedAnnotation)
-  }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

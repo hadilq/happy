@@ -16,15 +16,36 @@ jobs:
   check:
     name: Run tests and checks
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java_version: [ 11, 17 ]
+        ksp_enabled: [ true, false ]
+        ksp_incremental_enabled: [ true, false ]
+        exclude:
+          # Don't test incremental KSP if KSP itself isn't enabled
+          - ksp_enabled: false
+            ksp_incremental_enabled: true
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v1
+      - name: Generate cache key
+        run: ./checksum.sh checksum.txt
+      - uses: actions/cache@v2
         with:
-          java-version: '11'
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ matrix.java_version }}-${{ matrix.job }}-${{ hashFiles('checksum.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-${{ matrix.java_version }}-${{ matrix.job }}-
+      - name: Install JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: ${{ matrix.java_version }}
       - name: Run all checks
-        run:  ./gradlew check
+        run:  ./gradlew build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }}
       - name: Publish SNAPSHOT
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        run: ./gradlew :happy-annotation:publish :happy-processor:publish
+        run: ./gradlew :happy-annotation:publish :happy-processor:publish :happy-processor-ks:publish
