@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.github.hadilq.happy.processor.di
-
-import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
-import kotlinx.metadata.KmType
-import kotlinx.metadata.KmTypeParameter
-import javax.lang.model.element.TypeElement
+package com.github.hadilq.happy.processor.common.di
 
 public interface HappyProcessorModule {
   public val debug: Boolean
-  public val logNote: (message: String) -> Unit
+  public val logInfo: (message: String) -> Unit
   public val logWarning: (message: String) -> Unit
   public val logError: (message: String) -> Unit
-  public val typeElement: (qualifiedName: String) -> TypeElement
-
-  @KotlinPoetMetadataPreview
-  public val typeName: KmType?.(typeParams: List<KmTypeParameter>) -> TypeName?
 }

@@ -1,5 +1,6 @@
-package com.github.hadilq.happy.processor.generate
+package com.github.hadilq.happy.processor.analyse
 
+import com.github.hadilq.happy.processor.common.generate.qualifiedName
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.github.hadilq.happy.processor.generate
+package com.github.hadilq.happy.processor.common.generate
 
 public val String.qualifiedName: String
   get() = replace("/", ".")

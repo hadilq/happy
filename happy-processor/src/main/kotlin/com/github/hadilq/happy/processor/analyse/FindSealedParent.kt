@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.github.hadilq.happy.processor.generate
+package com.github.hadilq.happy.processor.analyse
 
 import com.github.hadilq.happy.processor.HType
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
@@ -37,5 +37,5 @@ internal fun findSealedParentKmClass(
     .getAnnotation(Metadata::class.java)
     ?.toKotlinClassMetadata<KotlinClassMetadata.Class>()
     ?.toKmClass() ?: return if (isSealed) hType else null
-  return findSealedParentKmClass(HType(superTypeElement, supperKmClass))
+  return findSealedParentKmClass(hType.newType(superTypeElement, supperKmClass))
 }

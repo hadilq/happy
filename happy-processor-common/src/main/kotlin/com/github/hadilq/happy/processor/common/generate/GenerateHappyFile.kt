@@ -1,32 +1,13 @@
-/*
- * Copyright 2021 Hadi Lashkari Ghouchani
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-package com.github.hadilq.happy.processor.generate
+package com.github.hadilq.happy.processor.common.generate
 
 import com.github.hadilq.happy.annotation.HappyDslMaker
-import com.github.hadilq.happy.processor.HType
-import com.github.hadilq.happy.processor.di.HappyProcessorModule
+import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
-import com.squareup.kotlinpoet.metadata.isInternal
 
-@KotlinPoetMetadataPreview
 public fun HappyProcessorModule.generateHappyFile(
-  sealedParentHType: HType,
-  happyHType: HType,
+  sealedParentHType: CommonHType,
+  happyHType: CommonHType,
 ): Result<FileSpec> {
   val otherwiseBuilderName = "${sealedParentHType.simpleNames.joinToString("")}$OTHERWISE_BUILDER"
 
@@ -50,10 +31,15 @@ public fun HappyProcessorModule.generateHappyFile(
     )
 
   val cases = findCases(sealedParentHType, happyHType).toList()
-  generateBuilderFunctions(happyHType, cases)
+  cases
+    .asSequence()
+    .generateBuilderFunctions(happyHType)
     .forEach {
-      val funSpec = it.getOrNull() ?: return Result.failure(it.exceptionOrNull()!!)
-      classBuilder.addFunction(funSpec)
+      it.fold({ funSpec ->
+        classBuilder.addFunction(funSpec)
+      }) { throwable ->
+        return Result.failure(throwable)
+      }
     }
 
   val otherwiseFunBuilder = FunSpec.builder(OTHERWISE)
@@ -115,7 +101,7 @@ public fun HappyProcessorModule.generateHappyFile(
 
   val elvisFunBuilder = generateElvisFunction(sealedParentHType, happyHType, cases)
 
-  if (happyHType.meta.flags.isInternal) {
+  if (happyHType.isInternal) {
     classBuilder.addModifiers(KModifier.INTERNAL)
     otherwiseFunBuilder.addModifiers(KModifier.INTERNAL)
     elvisFunBuilder.addModifiers(KModifier.INTERNAL)
@@ -137,11 +123,3 @@ public fun HappyProcessorModule.generateHappyFile(
 
   return Result.success(fileSpecBuilder.build())
 }
-
-private const val OTHERWISE = "elseIf"
-private const val OTHERWISE_BUILDER = "ElseIfBuilder"
-internal const val ELVIS = "elvis"
-internal const val BLOCK_NAME = "block"
-internal const val SEALED_PROPERTY_NAME = "parent"
-internal const val RESULT_VAR_NAME = "result"
-

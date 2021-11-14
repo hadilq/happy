@@ -1,17 +1,14 @@
-package com.github.hadilq.happy.processor.generate
+package com.github.hadilq.happy.processor.common.generate
 
-import com.github.hadilq.happy.processor.HType
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 
-@KotlinPoetMetadataPreview
 public fun generateElvisFunction(
-  sealedParentHType: HType,
-  happyHType: HType,
-  cases: List<Pair<List<String>, HType>>
+  sealedParentHType: CommonHType,
+  happyHType: CommonHType,
+  cases: List<Pair<List<String>, CommonHType>>
 ): FunSpec.Builder {
   val elvisFunBuilder = FunSpec.builder(ELVIS)
     .addModifiers(KModifier.PUBLIC)

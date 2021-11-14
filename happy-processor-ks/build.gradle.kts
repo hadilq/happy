@@ -35,6 +35,7 @@ dependencies {
   implementation(Dependencies.KotlinPoet.kotlinPoet)
   implementation(Dependencies.KotlinPoet.ksp)
   implementation(project(":happy-annotation"))
+  implementation(project(":happy-processor-common"))
 
   testImplementation(Dependencies.Ksp.ksp)
   testImplementation(Dependencies.Ksp.api)

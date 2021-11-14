@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.github.hadilq.happy.processor.generate
+package com.github.hadilq.happy.processor.analyse
 
 import com.github.hadilq.happy.processor.HType
-import com.github.hadilq.happy.processor.di.HappyProcessorModule
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import com.squareup.kotlinpoet.metadata.isPrimary
+import kotlinx.metadata.KmType
+import kotlinx.metadata.KmTypeParameter
 import kotlinx.metadata.KmValueParameter
 
 @KotlinPoetMetadataPreview
-public fun HappyProcessorModule.collectConstructorParams(
-  caseHType: HType,
-): Result<Pair<List<String>, List<ParameterSpec>>> = caseHType.meta
+public fun HType.collectConstructorParams(
+  typeName: KmType?.(typeParams: List<KmTypeParameter>) -> TypeName?,
+): Result<Pair<List<String>, List<ParameterSpec>>> = meta
   .constructors
   .asSequence()
   .filter { it.isPrimary }
@@ -35,16 +36,15 @@ public fun HappyProcessorModule.collectConstructorParams(
   .flatMap { param: KmValueParameter ->
     when {
       param.type != null -> {
-        param.type.typeName(caseHType.meta.typeParameters)
-          .generateParamSpecs(param, logError, false)
+        param.type.typeName(meta.typeParameters)
+          .generateParamSpecs(param, false)
       }
       param.varargElementType != null -> {
-        param.varargElementType.typeName(caseHType.meta.typeParameters)
-          .generateParamSpecs(param, logError, true)
+        param.varargElementType.typeName(meta.typeParameters)
+          .generateParamSpecs(param, true)
       }
       else -> {
         val message = "@Happy: Unknown error happened!"
-        logError(message)
         sequenceOf(Result.failure(RuntimeException(message)))
       }
     }
@@ -69,7 +69,6 @@ public fun HappyProcessorModule.collectConstructorParams(
 @KotlinPoetMetadataPreview
 private fun TypeName?.generateParamSpecs(
   param: KmValueParameter,
-  logError: (message: String) -> Unit,
   isVararg: Boolean,
 ): Sequence<Result<Pair<String, ParameterSpec>>> = this?.let { type ->
   val builder = ParameterSpec.builder(param.name, type)
@@ -79,6 +78,5 @@ private fun TypeName?.generateParamSpecs(
   sequenceOf(Result.success(Pair(param.name, builder.build())))
 } ?: run {
   val message = "@Happy: Unknown error happened!"
-  logError(message)
   sequenceOf(Result.failure(RuntimeException(message)))
 }

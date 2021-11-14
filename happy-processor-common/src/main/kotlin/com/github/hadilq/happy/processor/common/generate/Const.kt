@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+package com.github.hadilq.happy.processor.common.generate
 
-pluginManagement {
-  repositories {
-    gradlePluginPortal()
-    jcenter()
-  }
-}
-
-rootProject.name = "happy"
-include("happy-annotation")
-include("happy-processor-common")
-include("happy-processor")
-include("happy-processor-ks")
-include("happy-sample")
-
+public const val OTHERWISE: String = "elseIf"
+public const val OTHERWISE_BUILDER: String = "ElseIfBuilder"
+public const val ELVIS: String = "elvis"
+public const val BLOCK_NAME: String = "block"
+public const val SEALED_PROPERTY_NAME: String = "parent"
+public const val RESULT_VAR_NAME: String = "result"

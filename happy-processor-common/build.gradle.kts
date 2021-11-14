@@ -16,25 +16,12 @@
 
 plugins {
   kotlin("jvm")
-  kotlin("kapt")
 }
 
-setupPublication()
-
 dependencies {
-  implementation(Dependencies.AutoService.annotations)
-  kapt(Dependencies.AutoService.processor)
-  compileOnly(Dependencies.Incap.annotations)
-  kapt(Dependencies.Incap.processor)
-
   implementation(Dependencies.KotlinPoet.kotlinPoet)
   implementation(Dependencies.KotlinPoet.metadata)
   implementation(project(":happy-annotation"))
-  implementation(project(":happy-processor-common"))
-
-  testImplementation(Dependencies.Testing.compileTesting)
-  testImplementation(Dependencies.Testing.truth)
-  testImplementation(Dependencies.Testing.junit)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+package com.github.hadilq.happy.ksp
 
-pluginManagement {
-  repositories {
-    gradlePluginPortal()
-    jcenter()
+import com.google.auto.service.AutoService
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
+
+@AutoService(SymbolProcessorProvider::class)
+public class HappySymbolProcessorProvider : SymbolProcessorProvider {
+  override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+    return HappySymbolProcessor(environment)
   }
 }
-
-rootProject.name = "happy"
-include("happy-annotation")
-include("happy-processor-common")
-include("happy-processor")
-include("happy-processor-ks")
-include("happy-sample")
-

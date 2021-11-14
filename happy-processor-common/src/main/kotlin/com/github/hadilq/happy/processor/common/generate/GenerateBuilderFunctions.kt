@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.github.hadilq.happy.processor.generate
+package com.github.hadilq.happy.processor.common.generate
 
-import com.github.hadilq.happy.processor.HType
-import com.github.hadilq.happy.processor.di.HappyProcessorModule
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 
-@KotlinPoetMetadataPreview
-public fun HappyProcessorModule.generateBuilderFunctions(
-  happyHType: HType,
-  cases: List<Pair<List<String>, HType>>,
-): Sequence<Result<FunSpec>> = cases
-  .asSequence()
-  .map { (names, caseClass) ->
-    val constructorParams = collectConstructorParams(caseClass)
+public fun Sequence<Pair<List<String>, CommonHType>>.generateBuilderFunctions(
+  happyHType: CommonHType,
+): Sequence<Result<FunSpec>> =
+  map { (names, caseClass) ->
+    val constructorParams = caseClass.collectConstructorParams
     val (paramsName: List<String>, paramsSpec: List<ParameterSpec>) =
       constructorParams.getOrNull() ?: return@map Result.failure(constructorParams.exceptionOrNull()!!)
 
@@ -47,7 +41,7 @@ public fun HappyProcessorModule.generateBuilderFunctions(
               if($SEALED_PROPERTY_NAME is %T) {
                 $RESULT_VAR_NAME = $BLOCK_NAME(${paramsName.joinToString(", ") { "$SEALED_PROPERTY_NAME.$it" }})
               }
-            """.trimIndent(), typeElement(caseClass.qualifiedName)
+            """.trimIndent(), caseClass.className
           )
         )
         .build()

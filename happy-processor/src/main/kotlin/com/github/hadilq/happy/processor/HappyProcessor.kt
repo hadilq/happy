@@ -16,13 +16,20 @@
 package com.github.hadilq.happy.processor
 
 import com.github.hadilq.happy.annotation.Happy
-import com.github.hadilq.happy.processor.HappyProcessor.Companion.OPTION_GENERATED
-import com.github.hadilq.happy.processor.di.HappyProcessorModule
-import com.github.hadilq.happy.processor.generate.*
+import com.github.hadilq.happy.processor.analyse.asTypeName
+import com.github.hadilq.happy.processor.analyse.collectConstructorParams
+import com.github.hadilq.happy.processor.analyse.findSealedParentKmClass
+import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
+import com.github.hadilq.happy.processor.common.generate.CommonHType
+import com.github.hadilq.happy.processor.common.generate.generateHappyFile
+import com.github.hadilq.happy.processor.common.generate.qualifiedName
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.metadata.*
+import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
+import com.squareup.kotlinpoet.metadata.isInternal
+import com.squareup.kotlinpoet.metadata.isSealed
 import com.squareup.kotlinpoet.metadata.specs.toTypeSpec
+import com.squareup.kotlinpoet.metadata.toKotlinClassMetadata
 import kotlinx.metadata.KmClass
 import kotlinx.metadata.KmType
 import kotlinx.metadata.KmTypeParameter
@@ -37,50 +44,18 @@ import javax.tools.Diagnostic
 
 @KotlinPoetMetadataPreview
 @IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.ISOLATING)
-@SupportedOptions(OPTION_GENERATED)
 @AutoService(Processor::class)
 public class HappyProcessor : AbstractProcessor() {
-
-  public companion object {
-    /**
-     * This annotation processing argument can be specified to have a `@Generated` annotation
-     * included in the generated code. It is not encouraged unless you need it for static analysis
-     * reasons and not enabled by default.
-     *
-     * Note that this can only be one of the following values:
-     *   * `"javax.annotation.processing.Generated"` (JRE 9+)
-     *   * `"javax.annotation.Generated"` (JRE <9)
-     */
-    public const val OPTION_GENERATED: String = "happy.generated"
-
-    private val POSSIBLE_GENERATED_NAMES = setOf(
-      "javax.annotation.processing.Generated",
-      "javax.annotation.Generated"
-    )
-  }
 
   private lateinit var filer: Filer
   private lateinit var messager: Messager
   private lateinit var elementUtils: Elements
-  private var generatedAnnotation: AnnotationSpec? = null
 
   override fun init(processingEnv: ProcessingEnvironment) {
     super.init(processingEnv)
     filer = processingEnv.filer
     messager = processingEnv.messager
     elementUtils = processingEnv.elementUtils
-    generatedAnnotation = processingEnv.options[OPTION_GENERATED]?.let {
-      require(it in POSSIBLE_GENERATED_NAMES) {
-        "Invalid option value for $OPTION_GENERATED. Found $it, allowable values are $POSSIBLE_GENERATED_NAMES."
-      }
-      elementUtils.getTypeElement(it)
-    }?.let {
-      @Suppress("DEPRECATION")
-      AnnotationSpec.builder(it.asClassName())
-        .addMember("value = [%S]", HappyProcessor::class.java.canonicalName)
-        .addMember("comments = %S", "https://github.com/hadilq/happy-path")
-        .build()
-    }
   }
 
   override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.latestSupported()
@@ -98,13 +73,15 @@ public class HappyProcessor : AbstractProcessor() {
       .map { it as TypeElement }
       .forEach { happyType ->
         val module = Module(
-          logNote = { messager.printMessage(Diagnostic.Kind.NOTE, it, happyType) },
+          logInfo = { messager.printMessage(Diagnostic.Kind.NOTE, it, happyType) },
           logWarning = { messager.printMessage(Diagnostic.Kind.WARNING, it, happyType) },
           logError = { messager.printMessage(Diagnostic.Kind.ERROR, it, happyType) },
+        )
+        val happyHType = HType(
+          element = happyType,
           typeElement = { elementUtils.getTypeElement(it) },
           typeName = { typeParams -> asTypeName(typeParams) },
         )
-        val happyHType = HType(happyType)
         val sealedParentHType = findSealedParentKmClass(happyHType)
         if (sealedParentHType == null) {
           messager.printMessage(Diagnostic.Kind.ERROR, "@Happy: parent must be a sealed class!", happyType)
@@ -113,15 +90,16 @@ public class HappyProcessor : AbstractProcessor() {
         if (module.debug) {
           messager.printMessage(Diagnostic.Kind.NOTE, "@Happy: parent class! ${sealedParentHType.meta}")
         }
-        val result = module.generateHappyFile(sealedParentHType, happyHType)
-        result
-          .getOrNull()
-          ?.writeTo(filer)
-          ?: messager.printMessage(
-            Diagnostic.Kind.ERROR,
-            result.exceptionOrNull()!!.message,
-            happyType
-          )
+        module.generateHappyFile(sealedParentHType, happyHType)
+          .fold({
+            it.writeTo(filer)
+          }) {
+            messager.printMessage(
+              Diagnostic.Kind.ERROR,
+              it.message,
+              happyType
+            )
+          }
       }
     return false
   }
@@ -130,24 +108,51 @@ public class HappyProcessor : AbstractProcessor() {
 @KotlinPoetMetadataPreview
 private data class Module(
   override val debug: Boolean = false,
-  override val logNote: (message: String) -> Unit,
+  override val logInfo: (message: String) -> Unit,
   override val logWarning: (message: String) -> Unit,
   override val logError: (message: String) -> Unit,
-  override val typeElement: (qualifiedName: String) -> TypeElement,
-  override val typeName: KmType?.(typeParams: List<KmTypeParameter>) -> TypeName?,
 ) : HappyProcessorModule
 
 @KotlinPoetMetadataPreview
-public data class HType(
-  val element: TypeElement,
-  val meta: KmClass = element.getAnnotation(Metadata::class.java)
+public class HType(
+  public val element: TypeElement,
+  public val typeElement: (qualifiedName: String) -> TypeElement,
+  @KotlinPoetMetadataPreview
+  public val typeName: KmType?.(typeParams: List<KmTypeParameter>) -> TypeName?,
+  public val meta: KmClass = element.getAnnotation(Metadata::class.java)
     .toKotlinClassMetadata<KotlinClassMetadata.Class>()
     .toKmClass(),
-  val typeSpec: TypeSpec = meta.toTypeSpec(null),
-  val typeParameters: List<TypeVariableName> = typeSpec.typeVariables,
-  val className: TypeName = element.asType().asTypeName(),
-  val qualifiedName: String = meta.name.qualifiedName,
-  val simpleNames: List<String> = meta.name.substringAfterLast("/").split("."),
-  val simpleName: String = qualifiedName.substringAfterLast("."),
-  val packageName: String = meta.name.substringBeforeLast("/").replace("/", "."),
-)
+) : CommonHType {
+  private val typeSpec: TypeSpec = meta.toTypeSpec(null)
+  override val isSealed: Boolean by lazy { meta.flags.isSealed }
+  override val isInternal: Boolean by lazy { meta.flags.isInternal }
+  override val typeParameters: List<TypeVariableName> by lazy { typeSpec.typeVariables }
+  override val className: TypeName by lazy { element.asType().asTypeName() }
+  override val qualifiedName: String by lazy { meta.name.qualifiedName }
+  override val simpleNames: List<String> by lazy { meta.name.substringAfterLast("/").split(".") }
+  override val simpleName: String by lazy { qualifiedName.substringAfterLast(".") }
+  override val packageName: String by lazy { meta.name.substringBeforeLast("/").replace("/", ".") }
+  override val sealedSubclasses: Sequence<CommonHType> by lazy {
+    meta
+      .sealedSubclasses
+      .map { subclass -> newType(typeElement(subclass.qualifiedName)) }
+      .asSequence()
+  }
+
+  override val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>> by lazy {
+    collectConstructorParams(typeName)
+  }
+
+  override fun equals(other: Any?): Boolean {
+    if (other !is HType) return false
+    return element == other.element
+  }
+
+  @KotlinPoetMetadataPreview
+  public fun newType(
+    element: TypeElement,
+    meta: KmClass = element.getAnnotation(Metadata::class.java)
+      .toKotlinClassMetadata<KotlinClassMetadata.Class>()
+      .toKmClass(),
+    ): HType = HType(element, typeElement, typeName, meta)
+}
