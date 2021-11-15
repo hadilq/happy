@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java_version: [ 17 ]
+        java_version: [ 16 ]
         ksp_enabled: [ false ]
         ksp_incremental_enabled: [ true, false ]
         exclude:
@@ -49,3 +49,4 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         run: ./gradlew :happy-annotation:publish :happy-processor:publish :happy-processor-ks:publish
+        if: github.ref == 'refs/heads/main' && matrix.java_version == '16' && !matrix.ksp_enabled

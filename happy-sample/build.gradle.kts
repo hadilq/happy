@@ -20,10 +20,10 @@ plugins {
   kotlin("kapt")
 }
 
-val ksp = findProperty("happy.ksp.enable")?.toString()?.toBoolean() ?: false
+val kspEnabled = findProperty("happy.ksp.enable")?.toString()?.toBoolean() ?: false
 
 dependencies {
-  if (ksp) {
+  if (kspEnabled) {
     ksp(project(":happy-processor-ks"))
     kspTest(project(":happy-processor-ks"))
   } else {
