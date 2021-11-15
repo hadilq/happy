@@ -18,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java_version: [ 16 ]
-        ksp_enabled: [ false ]
+        java_version: [ 11 ]
+        ksp_enabled: [ true, false ]
         ksp_incremental_enabled: [ true, false ]
         exclude:
           # Don't test incremental KSP if KSP itself isn't enabled
@@ -43,7 +43,7 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java_version }}
       - name: Run all checks
-        run:  ./gradlew build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }}  --stacktrace --illegal-access=permit
+        run:  ./gradlew build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }} --stacktrace
       - name: Publish SNAPSHOT
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
