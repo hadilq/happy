@@ -23,24 +23,35 @@ plugins {
 val kspEnabled = findProperty("happy.ksp.enable")?.toString()?.toBoolean() ?: false
 
 dependencies {
-  val libVersion = LIB_VERSION
-//  val ksDependencyNotation = "com.github.hadilq:happy-processor-ks:$libVersion"
-//  val dependencyNotation = "com.github.hadilq:happy-processor:$libVersion"
-//  val annotationDependencyNotation = "com.github.hadilq:happy-annotation:$libVersion"
-  val ksDependencyNotation = project(":happy-processor-ks")
-  val dependencyNotation = project(":happy-processor")
-  val annotationDependencyNotation = project(":happy-annotation")
+  val useSnapshot = true
+  val libVersion = "0.0.3.1636997398103$SNAPSHOT"
 
   if (kspEnabled) {
-    ksp(ksDependencyNotation)
-    kspTest(ksDependencyNotation)
+    if (useSnapshot) {
+      ksp("com.github.hadilq:happy-processor-ks:$libVersion")
+      kspTest("com.github.hadilq:happy-processor-ks:$libVersion")
+    } else {
+      ksp(project(":happy-processor-ks"))
+      kspTest(project(":happy-processor-ks"))
+    }
   } else {
-    kapt(dependencyNotation)
-    kaptTest(dependencyNotation)
+    if (useSnapshot) {
+      kapt("com.github.hadilq:happy-processor:$libVersion")
+      kaptTest("com.github.hadilq:happy-processor:$libVersion")
+    } else {
+      kapt(project(":happy-processor"))
+      kaptTest(project(":happy-processor"))
+    }
   }
-  compileOnly(annotationDependencyNotation)
 
-  testCompileOnly(annotationDependencyNotation)
+  if (useSnapshot) {
+    compileOnly("com.github.hadilq:happy-annotation:$libVersion")
+    testCompileOnly("com.github.hadilq:happy-annotation:$libVersion")
+  } else {
+    compileOnly(project(":happy-annotation"))
+    testCompileOnly(project(":happy-annotation"))
+  }
+
   testImplementation(Dependencies.Testing.junit)
   testImplementation(Dependencies.Testing.truth)
 }
