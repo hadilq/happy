@@ -120,13 +120,13 @@ public class HType(
     declaration.typeParameters.map { it.toTypeVariableName(declaration.typeParameters.toTypeParameterResolver()) }
   }
   override val className: TypeName by lazy { declaration.toClassName() }
-  override val qualifiedName: String? by lazy { declaration.qualifiedName?.getQualifier() }
+  override val qualifiedName: String? by lazy { declaration.qualifiedName?.asString() }
   override val simpleNames: List<String> by lazy {
-    declaration.simpleName.getQualifier().substringAfterLast("/").split(".")
+    qualifiedName?.replace(packageName, "")?.split(".") ?: emptyList()
   }
   override val simpleName: String by lazy { declaration.simpleName.asString() }
   override val packageName: String by lazy {
-    declaration.simpleName.getQualifier().substringBeforeLast("/").replace("/", ".")
+    declaration.packageName.asString()
   }
   override val sealedSubclasses: Sequence<CommonHType> by lazy { declaration.getSealedSubclasses().map { HType(it) } }
   override val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>> by lazy {
