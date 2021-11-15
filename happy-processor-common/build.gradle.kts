@@ -18,6 +18,8 @@ plugins {
   kotlin("jvm")
 }
 
+setupPublication()
+
 dependencies {
   implementation(Dependencies.KotlinPoet.kotlinPoet)
   implementation(Dependencies.KotlinPoet.metadata)

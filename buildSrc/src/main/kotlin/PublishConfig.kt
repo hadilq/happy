@@ -19,8 +19,9 @@ const val LIB_VERSION = "0.0.3"
 fun isSnapshot(version: String): Boolean = version.endsWith(SNAPSHOT)
 
 private val artifactsVersion by lazy {
-  "$LIB_VERSION.${java.lang.System.currentTimeMillis()}$SNAPSHOT"
+  "$LIB_VERSION.${System.currentTimeMillis()}$SNAPSHOT"
 }
+
 
 fun Project.setupPublication() {
   plugins.apply("org.jetbrains.dokka")
@@ -60,8 +61,6 @@ fun Project.setupPublication() {
         artifact(javadocJar)
         if (!isSnapshot(version)) {
           signing.sign(this)
-        } else {
-          println("Download the SNAPSHOT with: implementation(\"${group}:${this@setupPublication.name}:${version}\")")
         }
         pom {
           withXml {
@@ -109,7 +108,14 @@ fun Project.setupPublication() {
         }
       }
     }
+  }
 
+  if (name == "happy-annotation") {
+    tasks.getByName("publish") {
+      doFirst {
+        println("Download the SNAPSHOT with: implementation(\"${GROUP_ID}:com.github.hadilq:happy-...:${artifactsVersion}\")")
+      }
+    }
   }
 }
 

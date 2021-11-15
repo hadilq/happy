@@ -21,13 +21,12 @@ plugins {
 }
 
 val kspEnabled = findProperty("happy.ksp.enable")?.toString()?.toBoolean() ?: false
+val libVersion = findProperty("happy.snapshot.version")?.toString() ?: ""
 
 dependencies {
-  val useSnapshot = false
-  val libVersion = "0.0.3.1636997398103$SNAPSHOT"
 
   if (kspEnabled) {
-    if (useSnapshot) {
+    if (libVersion.isNotBlank()) {
       ksp("com.github.hadilq:happy-processor-ks:$libVersion")
       kspTest("com.github.hadilq:happy-processor-ks:$libVersion")
     } else {
@@ -35,7 +34,7 @@ dependencies {
       kspTest(project(":happy-processor-ks"))
     }
   } else {
-    if (useSnapshot) {
+    if (libVersion.isNotBlank()) {
       kapt("com.github.hadilq:happy-processor:$libVersion")
       kaptTest("com.github.hadilq:happy-processor:$libVersion")
     } else {
@@ -44,7 +43,7 @@ dependencies {
     }
   }
 
-  if (useSnapshot) {
+  if (libVersion.isNotBlank()) {
     compileOnly("com.github.hadilq:happy-annotation:$libVersion")
     testCompileOnly("com.github.hadilq:happy-annotation:$libVersion")
   } else {
