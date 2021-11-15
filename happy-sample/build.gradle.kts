@@ -23,7 +23,7 @@ plugins {
 val kspEnabled = findProperty("happy.ksp.enable")?.toString()?.toBoolean() ?: false
 
 dependencies {
-  val useSnapshot = true
+  val useSnapshot = false
   val libVersion = "0.0.3.1636997398103$SNAPSHOT"
 
   if (kspEnabled) {
