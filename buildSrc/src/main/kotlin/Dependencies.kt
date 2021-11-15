@@ -38,7 +38,7 @@ object Dependencies {
   }
 
   object Ksp {
-    const val version = "1.5.30-1.0.0"
+    const val version = "1.5.31-1.0.1"
     const val ksp = "com.google.devtools.ksp:symbol-processing:$version"
     const val api = "com.google.devtools.ksp:symbol-processing-api:$version"
     const val plugin = "com.google.devtools.ksp"

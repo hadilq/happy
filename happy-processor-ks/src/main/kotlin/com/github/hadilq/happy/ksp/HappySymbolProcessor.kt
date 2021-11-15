@@ -82,24 +82,25 @@ public class HappySymbolProcessor(
             try {
               it.writeTo(codeGenerator, aggregating = false)
             } catch (t: Throwable) {
-              logger.error(
-                t.message!!,
-                happyType
-              )
+              onError(t, happyType)
             }
           }) {
-            logger.error(
-              it.message!!,
-              happyType
-            )
+            onError(it, happyType)
           }
       }
     return emptyList()
   }
+
+  private fun onError(t: Throwable, happyType: KSClassDeclaration) {
+    logger.error(
+      "${happyType.simpleName.asString()}: ${t.stackTrace.joinToString("\n")}",
+      happyType
+    )
+  }
 }
 
 private data class Module(
-  override val debug: Boolean = false,
+  override val debug: Boolean = true,
   override val logInfo: (message: String) -> Unit,
   override val logWarning: (message: String) -> Unit,
   override val logError: (message: String) -> Unit,

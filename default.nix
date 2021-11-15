@@ -3,7 +3,7 @@ with nixpkgs.pkgs;
 stdenv.mkDerivation {
   name = "zulu";
   buildInputs = [
-    jdk
+    jdk11
   ];
 }
 
