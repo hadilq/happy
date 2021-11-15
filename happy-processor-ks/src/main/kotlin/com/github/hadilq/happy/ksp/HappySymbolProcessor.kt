@@ -79,7 +79,14 @@ public class HappySymbolProcessor(
         }
         module.generateHappyFile(sealedParentHType, happyHType)
           .fold({
-            it.writeTo(codeGenerator, aggregating = false)
+            try {
+              it.writeTo(codeGenerator, aggregating = false)
+            } catch (t: Throwable) {
+              logger.error(
+                t.message!!,
+                happyType
+              )
+            }
           }) {
             logger.error(
               it.message!!,

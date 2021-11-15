@@ -30,7 +30,7 @@ public fun collectConstructorParams(
   ?.parameters
   ?.map { param: KSValueParameter ->
     val ksType = param.type.resolve()
-    ksType.toTypeName(ksType.declaration.typeParameters.toTypeParameterResolver())
+    ksType.toTypeName(declaration.typeParameters.toTypeParameterResolver())
       .generateParamSpecs(param)
   }
   ?.fold(
