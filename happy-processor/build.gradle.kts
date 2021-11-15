@@ -30,7 +30,7 @@ dependencies {
   implementation(Dependencies.KotlinPoet.kotlinPoet)
   implementation(Dependencies.KotlinPoet.metadata)
   implementation(project(":happy-annotation"))
-  implementation(project(":happy-processor-common"))
+  api(project(":happy-processor-common"))
 
   testImplementation(Dependencies.Testing.compileTesting)
   testImplementation(Dependencies.Testing.truth)

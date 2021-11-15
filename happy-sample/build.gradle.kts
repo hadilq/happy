@@ -23,16 +23,24 @@ plugins {
 val kspEnabled = findProperty("happy.ksp.enable")?.toString()?.toBoolean() ?: false
 
 dependencies {
-  if (kspEnabled) {
-    ksp(project(":happy-processor-ks"))
-    kspTest(project(":happy-processor-ks"))
-  } else {
-    kapt(project(":happy-processor"))
-    kaptTest(project(":happy-processor"))
-  }
-  compileOnly(project(":happy-annotation"))
+  val libVersion = LIB_VERSION
+//  val ksDependencyNotation = "com.github.hadilq:happy-processor-ks:$libVersion"
+//  val dependencyNotation = "com.github.hadilq:happy-processor:$libVersion"
+//  val annotationDependencyNotation = "com.github.hadilq:happy-annotation:$libVersion"
+  val ksDependencyNotation = project(":happy-processor-ks")
+  val dependencyNotation = project(":happy-processor")
+  val annotationDependencyNotation = project(":happy-annotation")
 
-  testCompileOnly(project(":happy-annotation"))
+  if (kspEnabled) {
+    ksp(ksDependencyNotation)
+    kspTest(ksDependencyNotation)
+  } else {
+    kapt(dependencyNotation)
+    kaptTest(dependencyNotation)
+  }
+  compileOnly(annotationDependencyNotation)
+
+  testCompileOnly(annotationDependencyNotation)
   testImplementation(Dependencies.Testing.junit)
   testImplementation(Dependencies.Testing.truth)
 }
