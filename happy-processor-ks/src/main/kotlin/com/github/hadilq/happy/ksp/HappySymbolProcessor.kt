@@ -26,8 +26,10 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSTypeParameter
 import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.ksp.toClassName
@@ -119,10 +121,17 @@ public class HType(
   override val typeParameters: List<TypeVariableName> by lazy {
     declaration.typeParameters.map { it.toTypeVariableName(declaration.typeParameters.toTypeParameterResolver()) }
   }
-  override val className: TypeName by lazy { declaration.toClassName() }
+  override val className: TypeName by lazy {
+    if (typeParameters.isEmpty()) {
+      declaration.toClassName()
+    } else {
+      declaration.toClassName().parameterizedBy(typeParameters)
+    }
+  }
+
   override val qualifiedName: String? by lazy { declaration.qualifiedName?.asString() }
   override val simpleNames: List<String> by lazy {
-    qualifiedName?.replace(packageName, "")?.split(".") ?: emptyList()
+    qualifiedName?.removePrefix(packageName)?.split(".") ?: emptyList()
   }
   override val simpleName: String by lazy { declaration.simpleName.asString() }
   override val packageName: String by lazy {
@@ -135,6 +144,6 @@ public class HType(
 
   override fun equals(other: Any?): Boolean {
     if (other !is HType) return false
-    return declaration == other.declaration
+    return qualifiedName == other.qualifiedName
   }
 }
