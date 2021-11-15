@@ -16,17 +16,16 @@
 package com.github.hadilq.happy.ksp
 
 import com.github.hadilq.happy.annotation.Happy
-import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
 import com.github.hadilq.happy.ksp.analyse.collectConstructorParams
 import com.github.hadilq.happy.ksp.analyse.findSealedParent
-import com.github.hadilq.happy.processor.common.generate.generateHappyFile
+import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
 import com.github.hadilq.happy.processor.common.generate.CommonHType
+import com.github.hadilq.happy.processor.common.generate.generateHappyFile
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSTypeParameter
 import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -112,16 +111,20 @@ private data class Module(
 public class HType(
   public val declaration: KSClassDeclaration
 ) : CommonHType {
-  override val isSealed: Boolean by lazy {
+
+  override val isSealed: Boolean by lazy(LazyThreadSafetyMode.NONE) {
     Modifier.SEALED in declaration.modifiers
   }
-  override val isInternal: Boolean by lazy {
+
+  override val isInternal: Boolean by lazy(LazyThreadSafetyMode.NONE) {
     Modifier.INTERNAL in declaration.modifiers
   }
-  override val typeParameters: List<TypeVariableName> by lazy {
+
+  override val typeParameters: List<TypeVariableName> by lazy(LazyThreadSafetyMode.NONE) {
     declaration.typeParameters.map { it.toTypeVariableName(declaration.typeParameters.toTypeParameterResolver()) }
   }
-  override val className: TypeName by lazy {
+
+  override val className: TypeName by lazy(LazyThreadSafetyMode.NONE) {
     if (typeParameters.isEmpty()) {
       declaration.toClassName()
     } else {
@@ -129,21 +132,32 @@ public class HType(
     }
   }
 
-  override val qualifiedName: String? by lazy { declaration.qualifiedName?.asString() }
-  override val simpleNames: List<String> by lazy {
+  override val qualifiedName: String? by lazy(LazyThreadSafetyMode.NONE) { declaration.qualifiedName?.asString() }
+
+  override val simpleNames: List<String> by lazy(LazyThreadSafetyMode.NONE) {
     qualifiedName?.removePrefix(packageName)?.split(".") ?: emptyList()
   }
-  override val simpleName: String by lazy { declaration.simpleName.asString() }
-  override val packageName: String by lazy {
+
+  override val simpleName: String by lazy(LazyThreadSafetyMode.NONE) { declaration.simpleName.asString() }
+
+  override val packageName: String by lazy(LazyThreadSafetyMode.NONE) {
     declaration.packageName.asString()
   }
-  override val sealedSubclasses: Sequence<CommonHType> by lazy { declaration.getSealedSubclasses().map { HType(it) } }
-  override val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>> by lazy {
+
+  override val sealedSubclasses: Sequence<CommonHType> by lazy(LazyThreadSafetyMode.NONE) {
+    declaration.getSealedSubclasses().map { HType(it) }
+  }
+
+  override val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>> by lazy(LazyThreadSafetyMode.NONE) {
     collectConstructorParams(declaration)
   }
 
   override fun equals(other: Any?): Boolean {
     if (other !is HType) return false
     return qualifiedName == other.qualifiedName
+  }
+
+  override fun hashCode(): Int {
+    return qualifiedName.hashCode()
   }
 }

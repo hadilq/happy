@@ -123,23 +123,32 @@ public class HType(
     .toKotlinClassMetadata<KotlinClassMetadata.Class>()
     .toKmClass(),
 ) : CommonHType {
+
   private val typeSpec: TypeSpec = meta.toTypeSpec(null)
-  override val isSealed: Boolean by lazy { meta.flags.isSealed }
-  override val isInternal: Boolean by lazy { meta.flags.isInternal }
-  override val typeParameters: List<TypeVariableName> by lazy { typeSpec.typeVariables }
-  override val className: TypeName by lazy { element.asType().asTypeName() }
-  override val qualifiedName: String by lazy { meta.name.qualifiedName }
-  override val simpleNames: List<String> by lazy { meta.name.substringAfterLast("/").split(".") }
-  override val simpleName: String by lazy { qualifiedName.substringAfterLast(".") }
-  override val packageName: String by lazy { meta.name.substringBeforeLast("/").replace("/", ".") }
-  override val sealedSubclasses: Sequence<CommonHType> by lazy {
+  override val isSealed: Boolean by lazy(LazyThreadSafetyMode.NONE) { meta.flags.isSealed }
+  override val isInternal: Boolean by lazy(LazyThreadSafetyMode.NONE) { meta.flags.isInternal }
+  override val typeParameters: List<TypeVariableName> by lazy(LazyThreadSafetyMode.NONE) { typeSpec.typeVariables }
+  override val className: TypeName by lazy(LazyThreadSafetyMode.NONE) { element.asType().asTypeName() }
+  override val qualifiedName: String by lazy(LazyThreadSafetyMode.NONE) { meta.name.qualifiedName }
+
+  override val simpleNames: List<String> by lazy(LazyThreadSafetyMode.NONE) {
+    meta.name.substringAfterLast("/").split(".")
+  }
+
+  override val simpleName: String by lazy(LazyThreadSafetyMode.NONE) { qualifiedName.substringAfterLast(".") }
+
+  override val packageName: String by lazy(LazyThreadSafetyMode.NONE) {
+    meta.name.substringBeforeLast("/").replace("/", ".")
+  }
+
+  override val sealedSubclasses: Sequence<CommonHType> by lazy(LazyThreadSafetyMode.NONE) {
     meta
       .sealedSubclasses
       .map { subclass -> newType(typeElement(subclass.qualifiedName)) }
       .asSequence()
   }
 
-  override val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>> by lazy {
+  override val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>> by lazy(LazyThreadSafetyMode.NONE) {
     collectConstructorParams(typeName)
   }
 
@@ -148,11 +157,15 @@ public class HType(
     return element == other.element
   }
 
+  override fun hashCode(): Int {
+    return qualifiedName.hashCode()
+  }
+
   @KotlinPoetMetadataPreview
   public fun newType(
     element: TypeElement,
     meta: KmClass = element.getAnnotation(Metadata::class.java)
       .toKotlinClassMetadata<KotlinClassMetadata.Class>()
       .toKmClass(),
-    ): HType = HType(element, typeElement, typeName, meta)
+  ): HType = HType(element, typeElement, typeName, meta)
 }
