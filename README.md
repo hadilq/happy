@@ -217,10 +217,18 @@ fun doJob(): B {
 
 ## Download
 
-Download via gradle
+Download via gradle for `kapt`
+
 ```groovy
 implementation "com.github.hadilq:happy-annotation:$libVersion"
 kapt "com.github.hadilq:happy-processor:$libVersion"
+```
+
+or download for `ksp`
+
+```groovy
+implementation "com.github.hadilq:happy-annotation:$libVersion"
+ksp "com.github.hadilq:happy-processor-ks:$libVersion"
 ```
 
 where you can find the `libVersion` in the [Releases](https://github.com/hadilq/happy/releases) page of this repository.

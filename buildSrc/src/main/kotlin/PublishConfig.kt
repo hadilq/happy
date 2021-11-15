@@ -14,9 +14,13 @@ import org.gradle.plugins.signing.SigningPlugin
 
 const val SNAPSHOT = "-SNAPSHOT"
 const val GROUP_ID = "com.github.hadilq"
-const val LIB_VERSION = "0.0.3$SNAPSHOT"
+const val LIB_VERSION = "0.0.3"
 
 fun isSnapshot(version: String): Boolean = version.endsWith(SNAPSHOT)
+
+private val artifactsVersion by lazy {
+  "$LIB_VERSION.${java.lang.System.currentTimeMillis()}$SNAPSHOT"
+}
 
 fun Project.setupPublication() {
   plugins.apply("org.jetbrains.dokka")
@@ -24,7 +28,7 @@ fun Project.setupPublication() {
   plugins.apply(SigningPlugin::class.java)
 
   group = GROUP_ID
-  version = LIB_VERSION
+  version = artifactsVersion
 
   val userId = "hadilq"
   val userName = "Hadi Lashkari Ghouchani"
@@ -56,6 +60,8 @@ fun Project.setupPublication() {
         artifact(javadocJar)
         if (!isSnapshot(version)) {
           signing.sign(this)
+        } else {
+          println("Download the SNAPSHOT with: implementation(\"${group}:${this@setupPublication.name}:${version}\")")
         }
         pom {
           withXml {
