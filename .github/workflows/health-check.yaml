@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         java_version: [ 11 ]
-        ksp_enabled: [ false ]
+        ksp_enabled: [ true, false ]
         ksp_incremental_enabled: [ true, false ]
         exclude:
           # Don't test incremental KSP if KSP itself isn't enabled
