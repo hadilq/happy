@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java_version: [ 11 ]
+        java_version: [ 17 ]
         ksp_enabled: [ false ]
         ksp_incremental_enabled: [ true, false ]
         exclude:
@@ -43,7 +43,7 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java_version }}
       - name: Run all checks
-        run:  ./gradlew build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }}
+        run:  ./gradlew build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }}  --stacktrace --illegal-access=permit
       - name: Publish SNAPSHOT
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}

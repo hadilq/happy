@@ -43,4 +43,4 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java_version }}
       - name: Run all checks
-        run:  ./gradlew build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }}
+        run:  ./gradlew build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }}  --stacktrace --illegal-access=permit
