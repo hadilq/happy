@@ -14,12 +14,13 @@ import org.gradle.plugins.signing.SigningPlugin
 
 const val SNAPSHOT = "-SNAPSHOT"
 const val GROUP_ID = "com.github.hadilq"
-const val LIB_VERSION = "0.0.3"
+const val LIB_VERSION = "0.1.0"
 
 fun isSnapshot(version: String): Boolean = version.endsWith(SNAPSHOT)
 
 private val artifactsVersion by lazy {
   "$LIB_VERSION.${System.currentTimeMillis()}$SNAPSHOT"
+//  LIB_VERSION
 }
 
 
@@ -112,8 +113,8 @@ fun Project.setupPublication() {
 
   if (name == "happy-annotation") {
     tasks.getByName("publish") {
-      doFirst {
-        println("Download the SNAPSHOT with: implementation(\"${GROUP_ID}:com.github.hadilq:happy-...:${artifactsVersion}\")")
+      doLast {
+        println("Download the SNAPSHOT with: implementation(\"${GROUP_ID}:happy-...:${artifactsVersion}\")")
       }
     }
   }
