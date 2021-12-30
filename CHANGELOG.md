@@ -1,6 +1,12 @@
 CHANGE LOG
 ===
 
+## Version 0.1.0
+
+  _2021_12_30_
+
+  * Update Kotlin to 1.6.10 and other libraries to related version
+
 ## Version 0.0.3
 
   _2021_11_15_
