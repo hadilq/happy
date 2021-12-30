@@ -29,8 +29,8 @@ object Dependencies {
   }
 
   object Kotlin {
-    const val version = "1.5.31"
-    const val dokkaVersion = "1.5.30"
+    const val version = "1.6.10"
+    const val dokkaVersion = "1.6.10"
     const val jvmTarget = "1.8"
     const val compilerEmbeddable = "org.jetbrains.kotlin:kotlin-compiler-embeddable:$version"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$version"
@@ -38,21 +38,21 @@ object Dependencies {
   }
 
   object Ksp {
-    const val version = "1.5.31-1.0.1"
+    const val version = "1.6.10-1.0.2"
     const val ksp = "com.google.devtools.ksp:symbol-processing:$version"
     const val api = "com.google.devtools.ksp:symbol-processing-api:$version"
     const val plugin = "com.google.devtools.ksp"
   }
 
   object KotlinPoet {
-    private const val version = "1.10.1"
+    private const val version = "1.10.2"
     const val kotlinPoet = "com.squareup:kotlinpoet:$version"
     const val metadata = "com.squareup:kotlinpoet-metadata:$version"
     const val ksp = "com.squareup:kotlinpoet-ksp:$version"
   }
 
   object Testing {
-    const val compiletTestingVersion = "1.4.4"
+    const val compiletTestingVersion = "1.4.7"
     const val compileTesting = "com.github.tschuchortdev:kotlin-compile-testing:$compiletTestingVersion"
     const val compileTestingKsp = "com.github.tschuchortdev:kotlin-compile-testing-ksp:$compiletTestingVersion"
     const val junit = "junit:junit:4.13.1"
