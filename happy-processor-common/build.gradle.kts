@@ -21,21 +21,44 @@ plugins {
 
 setupPublication()
 
+repositories {
+  /**
+   * We need this `fakeGroup` to resolve the latest published library
+   * directly from maven central and avoid omitting it like below!
+   * ```
+   * kspKotlinProcessorClasspath
+   * +--- com.github.hadilq:happy-processor-common:*** -> project :happy-processor-common (*)
+   *
+   * ...
+   *
+   * (*) - dependencies omitted (listed previously)
+   * ```
+   * To see a similar log just run `./gradlew :happy-processor-common:dependencies`.
+   */
+  val fakeGroup = ivy {
+    url = uri("https://repo1.maven.org/maven2/com/github/hadilq")
+    patternLayout {
+      artifact("[module]/[revision]/[module]-[revision].jar")
+    }
+    metadataSources { artifact() }
+  }
+  exclusiveContent {
+    forRepositories(fakeGroup)
+    filter { includeGroup(Dependencies.LatestHappy.happyFakeGroup) }
+  }
+}
+
 dependencies {
   implementation(Dependencies.KotlinPoet.kotlinPoet)
   implementation(Dependencies.KotlinPoet.metadata)
   implementation(Dependencies.LatestHappy.happyAnnotation)
-  compileOnly(Dependencies.LatestHappy.happyCommonPackage) {
-    version {
-      strictly(Dependencies.LatestHappy.version)
-    }
-  }
+  ksp(Dependencies.LatestHappy.happyCommonFake)
   ksp(Dependencies.LatestHappy.happyProcessorKsp)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
   outputs.cacheIf { false }
   kotlinOptions {
-    freeCompilerArgs += listOf("-Xallow-result-return-type")
+    freeCompilerArgs = freeCompilerArgs + listOf("-Xallow-result-return-type")
   }
 }

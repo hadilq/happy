@@ -36,7 +36,7 @@ public interface CommonHType {
 
 public sealed interface CollectConstructorParams {
 
-  @Happy
+//  @Happy
   public data class Params(
     val namesList: List<String>,
     val paramsList: List<ParameterSpec>,

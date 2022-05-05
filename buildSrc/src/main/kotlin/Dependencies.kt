@@ -53,12 +53,14 @@ object Dependencies {
 
   object LatestHappy {
     const val version = "0.1.0"
+    const val happyFakeGroup = "com.fake.happy"
     const val happyProcessorKaptPackage = "com.github.hadilq:happy-processor"
     const val happyProcessorKspPackage = "com.github.hadilq:happy-processor-ks"
     const val happyAnnotationPackage = "com.github.hadilq:happy-annotation"
-    const val happyCommonPackage = "com.github.hadilq:happy-processor-common"
+    const val happyCommonFakePackage = "$happyFakeGroup:happy-processor-common"
     const val happyProcessorKsp = "$happyProcessorKspPackage:$version"
     const val happyAnnotation = "$happyAnnotationPackage:$version"
+    const val happyCommonFake = "$happyCommonFakePackage:$version"
   }
 
   object Testing {

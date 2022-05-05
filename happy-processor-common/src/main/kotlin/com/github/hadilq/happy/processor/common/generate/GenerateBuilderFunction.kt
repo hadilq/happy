@@ -50,7 +50,7 @@ public fun Sequence<Pair<List<String>, CommonHType>>.generateBuilderFunctions(
 
 public sealed interface GenerateBuilderFunction {
 
-  @Happy
+//  @Happy
   public data class Function(
     val function: FunSpec
   ): GenerateBuilderFunction
