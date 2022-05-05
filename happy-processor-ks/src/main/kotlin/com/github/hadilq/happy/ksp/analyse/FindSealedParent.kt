@@ -16,17 +16,23 @@
 package com.github.hadilq.happy.ksp.analyse
 
 import com.github.hadilq.happy.ksp.HType
+import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.Modifier
 
-internal fun findSealedParent(
+internal fun HappyProcessorModule.findSealedParent(
   hType: HType
 ): HType? {
-  val isSealed = Modifier.SEALED in hType.declaration.modifiers
   val superClass = hType.declaration.superTypes
     .map { it.resolve().declaration }
     .filterIsInstance<KSClassDeclaration>()
-    .firstOrNull { it.classKind == ClassKind.CLASS } ?: return if (isSealed) hType else null
+    .firstOrNull {
+      it.classKind == ClassKind.CLASS || it.classKind ==ClassKind.INTERFACE }
+    ?: return if (hType.isSealed) hType else null
+
+  logInfo("qualifiedName: ${superClass.qualifiedName?.asString()}, isSealed: ${hType.isSealed}")
+  if (superClass.qualifiedName?.asString() == "kotlin.Any") {
+    return if (hType.isSealed) hType else null
+  }
   return findSealedParent(HType(superClass))
 }

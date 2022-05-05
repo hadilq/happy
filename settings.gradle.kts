@@ -17,7 +17,6 @@
 pluginManagement {
   repositories {
     gradlePluginPortal()
-    jcenter()
   }
 }
 
