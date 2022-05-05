@@ -24,7 +24,13 @@ setupPublication()
 dependencies {
   implementation(Dependencies.KotlinPoet.kotlinPoet)
   implementation(Dependencies.KotlinPoet.metadata)
-  implementation(project(":happy-annotation"))
+  implementation(Dependencies.LatestHappy.happyAnnotation)
+  compileOnly(Dependencies.LatestHappy.happyCommonPackage) {
+    version {
+      strictly(Dependencies.LatestHappy.version)
+    }
+  }
+  ksp(Dependencies.LatestHappy.happyProcessorKsp)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
