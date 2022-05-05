@@ -29,8 +29,8 @@ object Dependencies {
   }
 
   object Kotlin {
-    const val version = "1.6.10"
-    const val dokkaVersion = "1.6.10"
+    const val version = "1.6.21"
+    const val dokkaVersion = "1.6.21"
     const val jvmTarget = "1.8"
     const val compilerEmbeddable = "org.jetbrains.kotlin:kotlin-compiler-embeddable:$version"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$version"
@@ -38,7 +38,7 @@ object Dependencies {
   }
 
   object Ksp {
-    const val version = "1.6.10-1.0.2"
+    const val version = "1.6.21-1.0.5"
     const val ksp = "com.google.devtools.ksp:symbol-processing:$version"
     const val api = "com.google.devtools.ksp:symbol-processing-api:$version"
     const val plugin = "com.google.devtools.ksp"
