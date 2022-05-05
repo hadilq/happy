@@ -63,14 +63,16 @@ public class HappySymbolProcessor(
           return@forEach
         }
 
+        val debug = true
         val module = Module(
-          logInfo = { logger.info(it, happyType) },
+          debug = debug,
+          logInfo = { if (debug) logger.info(it, happyType) },
           logWarning = { logger.warn(it, happyType) },
           logError = { logger.error(it, happyType) },
         )
 
         val happyHType = HType(happyType)
-        val sealedParentHType = findSealedParent(happyHType)
+        val sealedParentHType = module.findSealedParent(happyHType)
         if (sealedParentHType == null) {
           logger.error("@Happy: parent must be a sealed class!", happyType)
           return@forEach
@@ -101,7 +103,7 @@ public class HappySymbolProcessor(
 }
 
 private data class Module(
-  override val debug: Boolean = true,
+  override val debug: Boolean,
   override val logInfo: (message: String) -> Unit,
   override val logWarning: (message: String) -> Unit,
   override val logError: (message: String) -> Unit,
