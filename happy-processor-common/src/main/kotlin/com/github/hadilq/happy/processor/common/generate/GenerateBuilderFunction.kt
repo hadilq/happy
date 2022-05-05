@@ -47,3 +47,15 @@ public fun Sequence<Pair<List<String>, CommonHType>>.generateBuilderFunctions(
         .build()
     )
   }
+
+public sealed interface GenerateBuilderFunction {
+
+  @Happy
+  public data class Function(
+    val function: FunSpec
+  ): GenerateBuilderFunction
+
+  public data class NoPrimaryConstructor(val classQualifiedName: String?) : GenerateBuilderFunction
+  public object NoParamName: GenerateBuilderFunction
+  public object Unknown: GenerateBuilderFunction
+}

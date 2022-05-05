@@ -15,6 +15,7 @@
 */
 
 plugins {
+  id(Dependencies.Ksp.plugin) version Dependencies.Ksp.version
   kotlin("jvm")
 }
 

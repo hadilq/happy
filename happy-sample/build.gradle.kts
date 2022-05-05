@@ -27,16 +27,16 @@ dependencies {
 
   if (kspEnabled) {
     if (libVersion.isNotBlank()) {
-      ksp("com.github.hadilq:happy-processor-ks:$libVersion")
-      kspTest("com.github.hadilq:happy-processor-ks:$libVersion")
+      ksp("${Dependencies.LatestHappy.happyProcessorKspPackage}:$libVersion")
+      kspTest("${Dependencies.LatestHappy.happyProcessorKspPackage}:$libVersion")
     } else {
       ksp(project(":happy-processor-ks"))
       kspTest(project(":happy-processor-ks"))
     }
   } else {
     if (libVersion.isNotBlank()) {
-      kapt("com.github.hadilq:happy-processor:$libVersion")
-      kaptTest("com.github.hadilq:happy-processor:$libVersion")
+      kapt("${Dependencies.LatestHappy.happyProcessorKaptPackage}:$libVersion")
+      kaptTest("${Dependencies.LatestHappy.happyProcessorKaptPackage}:$libVersion")
     } else {
       kapt(project(":happy-processor"))
       kaptTest(project(":happy-processor"))
@@ -44,8 +44,8 @@ dependencies {
   }
 
   if (libVersion.isNotBlank()) {
-    compileOnly("com.github.hadilq:happy-annotation:$libVersion")
-    testCompileOnly("com.github.hadilq:happy-annotation:$libVersion")
+    compileOnly("${Dependencies.LatestHappy.happyAnnotationPackage}:$libVersion")
+    testCompileOnly("${Dependencies.LatestHappy.happyAnnotationPackage}:$libVersion")
   } else {
     compileOnly(project(":happy-annotation"))
     testCompileOnly(project(":happy-annotation"))
