@@ -50,8 +50,7 @@ dependencies {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
   outputs.cacheIf { false }
   kotlinOptions {
-    freeCompilerArgs += listOf(
-      "-Xallow-result-return-type",
+    freeCompilerArgs = freeCompilerArgs + listOf(
       "-Xopt-in=com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview"
     )
   }

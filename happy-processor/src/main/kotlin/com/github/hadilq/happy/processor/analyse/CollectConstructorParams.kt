@@ -16,6 +16,7 @@
 package com.github.hadilq.happy.processor.analyse
 
 import com.github.hadilq.happy.processor.HType
+import com.github.hadilq.happy.processor.common.generate.CollectConstructorParams
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
@@ -24,16 +25,17 @@ import com.squareup.kotlinpoet.metadata.isPrimary
 import kotlinx.metadata.KmType
 import kotlinx.metadata.KmTypeParameter
 import kotlinx.metadata.KmValueParameter
+import com.github.hadilq.happy.processor.common.generate.elvis
 
 @KotlinPoetMetadataPreview
 public fun HType.collectConstructorParams(
   typeName: KmType?.(typeParams: List<KmTypeParameter>) -> TypeName?,
-): Result<Pair<List<String>, List<ParameterSpec>>> = meta
+): CollectConstructorParams = meta
   .constructors
   .asSequence()
   .filter { it.isPrimary }
   .flatMap { it.valueParameters }
-  .flatMap { param: KmValueParameter ->
+  .map { param: KmValueParameter ->
     when {
       param.type != null -> {
         param.type.typeName(meta.typeParameters)
@@ -44,39 +46,41 @@ public fun HType.collectConstructorParams(
           .generateParamSpecs(param, true)
       }
       else -> {
-        val message = "@Happy: Unknown error happened!"
-        sequenceOf(Result.failure(RuntimeException(message)))
+        val message = "@Happy: param type is not supported!"
+        CollectConstructorParams.Failure.NoParam(RuntimeException(message))
       }
     }
   }
   .fold(
-    Result.success(
-      Pair(
-        mutableListOf(),
-        mutableListOf(),
-      )
+    CollectConstructorParams.Params(emptyList(), emptyList())
+  ) { acc: CollectConstructorParams, result ->
+    val previousSuccesses = acc.elvis(
+      FailureNoPrimaryConstructor = { return@fold it },
+      FailureNoParam = { return@fold it },
+      FailureUnknown = { return@fold it },
     )
-  ) { acc: Result<Pair<MutableList<String>, MutableList<ParameterSpec>>>, result ->
-    result.getOrNull()?.let { pair ->
-      acc.getOrNull()!!.apply {
-        first.add(pair.first)
-        second.add(pair.second)
-      }
-      acc
-    } ?: Result.failure(result.exceptionOrNull()!!)
+    val newSuccess = result.elvis(
+      FailureNoPrimaryConstructor = { return@fold it },
+      FailureNoParam = { return@fold it },
+      FailureUnknown = { return@fold it },
+    )
+    CollectConstructorParams.Params(
+      namesList = previousSuccesses.namesList + newSuccess.namesList,
+      paramsList = previousSuccesses.paramsList + newSuccess.paramsList,
+    )
   }
 
 @KotlinPoetMetadataPreview
 private fun TypeName?.generateParamSpecs(
   param: KmValueParameter,
   isVararg: Boolean,
-): Sequence<Result<Pair<String, ParameterSpec>>> = this?.let { type ->
+): CollectConstructorParams = this?.let { type ->
   val builder = ParameterSpec.builder(param.name, type)
   if (isVararg) {
     builder.addModifiers(KModifier.VARARG)
   }
-  sequenceOf(Result.success(Pair(param.name, builder.build())))
+  CollectConstructorParams.Params(listOf(param.name), listOf(builder.build()))
 } ?: run {
   val message = "@Happy: Unknown error happened!"
-  sequenceOf(Result.failure(RuntimeException(message)))
+  CollectConstructorParams.Failure.Unknown(RuntimeException(message))
 }

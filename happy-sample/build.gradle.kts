@@ -23,6 +23,15 @@ plugins {
 val kspEnabled = findProperty("happy.ksp.enable")?.toString()?.toBoolean() ?: false
 val libVersion = findProperty("happy.snapshot.version")?.toString() ?: ""
 
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+    sourceSets.test {
+        kotlin.srcDir("build/generated/ksp/test/kotlin")
+    }
+}
+
 dependencies {
 
   if (kspEnabled) {

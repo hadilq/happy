@@ -36,10 +36,3 @@ dependencies {
   testImplementation(Dependencies.Testing.truth)
   testImplementation(Dependencies.Testing.junit)
 }
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-  outputs.cacheIf { false }
-  kotlinOptions {
-    freeCompilerArgs += listOf("-Xallow-result-return-type")
-  }
-}

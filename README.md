@@ -215,6 +215,9 @@ fun doJob(): B {
 }
 ```
 
+If you're not satisfied with above explanations and the tests to how it's beneficial for your code, you can also take
+a look at the `happy-processor-common` code, where it's used in its processor too!
+
 ## Download
 
 Download via gradle for `kapt`
@@ -232,6 +235,8 @@ ksp "com.github.hadilq:happy-processor-ks:$libVersion"
 ```
 
 where you can find the `libVersion` in the [Releases](https://github.com/hadilq/happy/releases) page of this repository.
+
+If you are using `ksp` don't forget to follow their [documents](https://kotlinlang.org/docs/ksp-quickstart.html), especially the [IDE related part](https://kotlinlang.org/docs/ksp-quickstart.html#make-ide-aware-of-generated-code).
 
 Snapshots of the development version are available in [Sonatype's snapshots repository](https://oss.sonatype.org/content/repositories/snapshots).
 
