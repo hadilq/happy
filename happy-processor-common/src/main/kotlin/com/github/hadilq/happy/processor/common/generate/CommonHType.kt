@@ -15,6 +15,7 @@
 */
 package com.github.hadilq.happy.processor.common.generate
 
+import com.github.hadilq.happy.annotation.Happy
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeVariableName
@@ -29,6 +30,31 @@ public interface CommonHType {
   public val simpleName: String
   public val packageName: String
   public val sealedSubclasses: Sequence<CommonHType>
-  public val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>>
+  public val collectConstructorParams: CollectConstructorParams
   public override operator fun equals(other: Any?): Boolean
+}
+
+public sealed interface CollectConstructorParams {
+
+  @Happy
+  public data class Params(
+    val namesList: List<String>,
+    val paramsList: List<ParameterSpec>,
+  ) : CollectConstructorParams
+
+  public sealed class Failure : CollectConstructorParams {
+    public abstract val throwable: Throwable
+
+    public data class NoPrimaryConstructor(
+      public override val throwable: Throwable,
+    ) : Failure()
+
+    public data class NoParam(
+      public override val throwable: Throwable,
+    ) : Failure()
+
+    public data class Unknown(
+      public override val throwable: Throwable,
+    ) : Failure()
+  }
 }

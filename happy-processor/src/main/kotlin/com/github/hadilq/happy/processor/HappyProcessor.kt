@@ -20,9 +20,7 @@ import com.github.hadilq.happy.processor.analyse.asTypeName
 import com.github.hadilq.happy.processor.analyse.collectConstructorParams
 import com.github.hadilq.happy.processor.analyse.findSealedParentKmClass
 import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
-import com.github.hadilq.happy.processor.common.generate.CommonHType
-import com.github.hadilq.happy.processor.common.generate.generateHappyFile
-import com.github.hadilq.happy.processor.common.generate.qualifiedName
+import com.github.hadilq.happy.processor.common.generate.*
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
@@ -90,16 +88,15 @@ public class HappyProcessor : AbstractProcessor() {
         if (module.debug) {
           messager.printMessage(Diagnostic.Kind.NOTE, "@Happy: parent class! ${sealedParentHType.meta}")
         }
-        module.generateHappyFile(sealedParentHType, happyHType)
-          .fold({
-            it.writeTo(filer)
-          }) {
-            messager.printMessage(
-              Diagnostic.Kind.ERROR,
-              it.message,
-              happyType
-            )
-          }
+        val file = module.generateHappyFile(sealedParentHType, happyHType).elvis {
+          messager.printMessage(
+            Diagnostic.Kind.ERROR,
+            it.reason.reason.throwable.message,
+            happyType
+          )
+          return false
+        }
+        file.fileSpec.writeTo(filer)
       }
     return false
   }
@@ -148,7 +145,7 @@ public class HType(
       .asSequence()
   }
 
-  override val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>> by lazy(LazyThreadSafetyMode.NONE) {
+  override val collectConstructorParams: CollectConstructorParams by lazy(LazyThreadSafetyMode.NONE) {
     collectConstructorParams(typeName)
   }
 

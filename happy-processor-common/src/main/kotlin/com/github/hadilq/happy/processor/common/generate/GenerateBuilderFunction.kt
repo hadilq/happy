@@ -15,23 +15,41 @@
 */
 package com.github.hadilq.happy.processor.common.generate
 
+import com.github.hadilq.happy.annotation.Happy
 import com.squareup.kotlinpoet.*
 
 public fun Sequence<Pair<List<String>, CommonHType>>.generateBuilderFunctions(
   happyHType: CommonHType,
-): Sequence<Result<FunSpec>> =
+): Sequence<GenerateBuilderFunction> =
   map { (names, caseClass) ->
-    val constructorParams = caseClass.collectConstructorParams
-    val (paramsName: List<String>, paramsSpec: List<ParameterSpec>) =
-      constructorParams.getOrNull() ?: return@map Result.failure(constructorParams.exceptionOrNull()!!)
+    val constructors = caseClass.collectConstructorParams.elvis(
+      FailureNoPrimaryConstructor = {
+        return@map GenerateBuilderFunction.Failure(
+          classQualifiedName = caseClass.qualifiedName,
+          reason = it,
+        )
+      },
+      FailureNoParam = {
+        return@map GenerateBuilderFunction.Failure(
+          classQualifiedName = caseClass.qualifiedName,
+          reason = it,
+        )
+      },
+      FailureUnknown = {
+        return@map GenerateBuilderFunction.Failure(
+          classQualifiedName = caseClass.qualifiedName,
+          reason = it,
+        )
+      }
+    )
 
-    Result.success(
+    GenerateBuilderFunction.Function(
       FunSpec.builder(names.joinToString(""))
         .addModifiers(KModifier.PUBLIC)
         .addModifiers(KModifier.INLINE)
         .addParameter(
           BLOCK_NAME, LambdaTypeName.get(
-            parameters = paramsSpec,
+            parameters = constructors.paramsList,
             returnType = happyHType.className
           )
         )
@@ -39,7 +57,7 @@ public fun Sequence<Pair<List<String>, CommonHType>>.generateBuilderFunctions(
           CodeBlock.of(
             """
               if($SEALED_PROPERTY_NAME is %T) {
-                $RESULT_VAR_NAME = $BLOCK_NAME(${paramsName.joinToString(", ") { "$SEALED_PROPERTY_NAME.$it" }})
+                $RESULT_VAR_NAME = $BLOCK_NAME(${constructors.namesList.joinToString(", ") { "$SEALED_PROPERTY_NAME.$it" }})
               }
             """.trimIndent(), caseClass.className
           )
@@ -47,3 +65,16 @@ public fun Sequence<Pair<List<String>, CommonHType>>.generateBuilderFunctions(
         .build()
     )
   }
+
+public sealed interface GenerateBuilderFunction {
+
+  @Happy
+  public data class Function(
+    val function: FunSpec
+  ) : GenerateBuilderFunction
+
+  public data class Failure(
+    public val classQualifiedName: String?,
+    public val reason: CollectConstructorParams.Failure,
+  ): GenerateBuilderFunction
+}

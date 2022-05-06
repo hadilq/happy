@@ -1,5 +1,6 @@
 package com.github.hadilq.happy.processor.common.generate
 
+import com.github.hadilq.happy.annotation.Happy
 import com.github.hadilq.happy.annotation.HappyDslMaker
 import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
 import com.squareup.kotlinpoet.*
@@ -8,7 +9,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 public fun HappyProcessorModule.generateHappyFile(
   sealedParentHType: CommonHType,
   happyHType: CommonHType,
-): Result<FileSpec> {
+): GenerateHappyFile {
   val otherwiseBuilderName = "${sealedParentHType.simpleNames.joinToString("")}$OTHERWISE_BUILDER"
 
   val classBuilder = TypeSpec.classBuilder(otherwiseBuilderName)
@@ -34,12 +35,11 @@ public fun HappyProcessorModule.generateHappyFile(
   cases
     .asSequence()
     .generateBuilderFunctions(happyHType)
-    .forEach {
-      it.fold({ funSpec ->
-        classBuilder.addFunction(funSpec)
-      }) { throwable ->
-        return Result.failure(throwable)
+    .forEach { generatedFunction ->
+      val fn = generatedFunction.elvis {
+        return GenerateHappyFile.Failure(it)
       }
+      classBuilder.addFunction(fn.function)
     }
 
   val otherwiseFunBuilder = FunSpec.builder(OTHERWISE)
@@ -121,5 +121,16 @@ public fun HappyProcessorModule.generateHappyFile(
     fileSpecBuilder.addType(typeSpec)
   }
 
-  return Result.success(fileSpecBuilder.build())
+  return GenerateHappyFile.File(fileSpecBuilder.build())
+}
+
+public sealed interface GenerateHappyFile {
+  @Happy
+  public data class File(
+    public val fileSpec: FileSpec,
+  ) : GenerateHappyFile
+
+  public data class Failure(
+    public val reason: GenerateBuilderFunction.Failure,
+  ) : GenerateHappyFile
 }

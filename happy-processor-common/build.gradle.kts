@@ -15,20 +15,54 @@
 */
 
 plugins {
+  id(Dependencies.Ksp.plugin) version Dependencies.Ksp.version
   kotlin("jvm")
 }
 
 setupPublication()
 
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+    sourceSets.test {
+        kotlin.srcDir("build/generated/ksp/test/kotlin")
+    }
+}
+
+
+repositories {
+  /**
+   * We need this `fakeGroup` to resolve the latest published library
+   * directly from maven central and avoid omitting it like below!
+   * ```
+   * kspKotlinProcessorClasspath
+   * +--- com.github.hadilq:happy-processor-common:*** -> project :happy-processor-common (*)
+   *
+   * ...
+   *
+   * (*) - dependencies omitted (listed previously)
+   * ```
+   * To see a similar log just run `./gradlew :happy-processor-common:dependencies`.
+   */
+  val fakeGroup = ivy {
+    url = uri("https://oss.sonatype.org/content/repositories/snapshots/com/github/hadilq")
+
+    patternLayout {
+      artifact("[module]/[revision]/[module]-0.1.1.1651794439075-20220505.234824-1.jar")
+    }
+    metadataSources { artifact() }
+  }
+  exclusiveContent {
+    forRepositories(fakeGroup)
+    filter { includeGroup(Dependencies.LatestHappy.happyFakeGroup) }
+  }
+}
+
 dependencies {
   implementation(Dependencies.KotlinPoet.kotlinPoet)
   implementation(Dependencies.KotlinPoet.metadata)
-  implementation(project(":happy-annotation"))
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-  outputs.cacheIf { false }
-  kotlinOptions {
-    freeCompilerArgs += listOf("-Xallow-result-return-type")
-  }
+  implementation(Dependencies.LatestHappy.happyAnnotationSnapshot)
+  ksp(Dependencies.LatestHappy.happyCommonFake)
+  ksp(Dependencies.LatestHappy.happyProcessorSnapshotKsp)
 }

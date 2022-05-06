@@ -19,7 +19,9 @@ import com.github.hadilq.happy.annotation.Happy
 import com.github.hadilq.happy.ksp.analyse.collectConstructorParams
 import com.github.hadilq.happy.ksp.analyse.findSealedParent
 import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
+import com.github.hadilq.happy.processor.common.generate.CollectConstructorParams
 import com.github.hadilq.happy.processor.common.generate.CommonHType
+import com.github.hadilq.happy.processor.common.generate.elvis
 import com.github.hadilq.happy.processor.common.generate.generateHappyFile
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -80,16 +82,16 @@ public class HappySymbolProcessor(
         if (module.debug) {
           logger.info("@Happy: parent class! ${sealedParentHType.declaration}")
         }
-        module.generateHappyFile(sealedParentHType, happyHType)
-          .fold({
-            try {
-              it.writeTo(codeGenerator, aggregating = false)
-            } catch (t: Throwable) {
-              onError(t, happyType)
-            }
-          }) {
-            onError(it, happyType)
-          }
+        val file = module.generateHappyFile(sealedParentHType, happyHType).elvis {
+          onError(it.reason.reason.throwable, happyType)
+          return emptyList()
+        }
+
+        try {
+          file.fileSpec.writeTo(codeGenerator, aggregating = false)
+        } catch (t: Throwable) {
+          onError(t, happyType)
+        }
       }
     return emptyList()
   }
@@ -150,7 +152,7 @@ public class HType(
     declaration.getSealedSubclasses().map { HType(it) }
   }
 
-  override val collectConstructorParams: Result<Pair<List<String>, List<ParameterSpec>>> by lazy(LazyThreadSafetyMode.NONE) {
+  override val collectConstructorParams: CollectConstructorParams by lazy(LazyThreadSafetyMode.NONE) {
     collectConstructorParams(declaration)
   }
 

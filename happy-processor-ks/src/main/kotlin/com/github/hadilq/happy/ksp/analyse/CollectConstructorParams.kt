@@ -15,6 +15,7 @@
 */
 package com.github.hadilq.happy.ksp.analyse
 
+import com.github.hadilq.happy.processor.common.generate.CollectConstructorParams
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.squareup.kotlinpoet.KModifier
@@ -22,10 +23,11 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
+import com.github.hadilq.happy.processor.common.generate.elvis
 
 public fun collectConstructorParams(
   declaration: KSClassDeclaration,
-): Result<Pair<List<String>, List<ParameterSpec>>> = declaration
+): CollectConstructorParams = declaration
   .primaryConstructor
   ?.parameters
   ?.map { param: KSValueParameter ->
@@ -34,35 +36,38 @@ public fun collectConstructorParams(
       .generateParamSpecs(param)
   }
   ?.fold(
-    Result.success(
-      Pair(
-        mutableListOf(),
-        mutableListOf(),
-      )
+    CollectConstructorParams.Params(emptyList(), emptyList())
+  ) fold@{ acc: CollectConstructorParams, result ->  // For the lack of traverse for sequences
+    val previousSuccesses = acc.elvis(
+      FailureNoPrimaryConstructor = { return@fold it },
+      FailureNoParam = { return@fold it },
+      FailureUnknown = { return@fold it },
     )
-  ) { acc: Result<Pair<MutableList<String>, MutableList<ParameterSpec>>>, result ->  // For the lack of traverse for sequences
-    acc.fold({ a ->
-      result.fold({ pair ->
-        a.apply {
-          first.add(pair.first)
-          second.add(pair.second)
-        }
-        Result.success(a)
-      }) { Result.failure(it) }
-    }) { Result.failure(it) }
-  } ?: Result.failure(RuntimeException("@Happy: $declaration doesn't have a primary constructor!"))
+    val newSuccess = result.elvis(
+      FailureNoPrimaryConstructor = { return@fold it },
+      FailureNoParam = { return@fold it },
+      FailureUnknown = { return@fold it },
+    )
+    CollectConstructorParams.Params(
+      namesList = previousSuccesses.namesList + newSuccess.namesList,
+      paramsList = previousSuccesses.paramsList + newSuccess.paramsList,
+    )
+  }
+  ?: CollectConstructorParams.Failure.NoPrimaryConstructor(
+    throwable = RuntimeException("@Happy: $declaration doesn't have a primary constructor!")
+  )
 
 private fun TypeName?.generateParamSpecs(
   param: KSValueParameter,
-): Result<Pair<String, ParameterSpec>> = this?.let { type ->
+): CollectConstructorParams = this?.let { type ->
   val name = param.name?.asString()
-    ?: return@let Result.failure(RuntimeException("@Happy: they param, $param, should have a name!"))
+    ?: return@let CollectConstructorParams.Failure.NoParam(RuntimeException("@Happy: the param, $param, should have a name!"))
   val builder = ParameterSpec.builder(name, type)
   if (param.isVararg) {
     builder.addModifiers(KModifier.VARARG)
   }
-  Result.success(Pair(name, builder.build()))
+  CollectConstructorParams.Params(listOf(name), listOf(builder.build()))
 } ?: run {
   val message = "@Happy: Unknown error happened!"
-  Result.failure(RuntimeException(message))
+  CollectConstructorParams.Failure.Unknown(RuntimeException(message))
 }

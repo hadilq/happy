@@ -1,9 +1,11 @@
 { nixpkgs ? import <nixpkgs> {} }:
 with nixpkgs.pkgs;
 pkgs.mkShell {
-  name = "zulu";
+  name = "happy";
   buildInputs = [
     jdk11
+    jetbrains.idea-community
+    neovim
   ];
 
   shellHook = ''

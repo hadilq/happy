@@ -51,8 +51,23 @@ object Dependencies {
     const val ksp = "com.squareup:kotlinpoet-ksp:$version"
   }
 
+  object LatestHappy {
+    const val version = "0.1.0"
+    const val snapshotVersion = "0.1.1.1651794439075"
+    const val happyProcessorKaptPackage = "com.github.hadilq:happy-processor"
+    const val happyProcessorKspPackage = "com.github.hadilq:happy-processor-ks"
+    const val happyAnnotationPackage = "com.github.hadilq:happy-annotation"
+    const val happyProcessorKsp = "$happyProcessorKspPackage:$version"
+    const val happyAnnotation = "$happyAnnotationPackage:$version"
+    const val happyFakeGroup = "com.fake.happy"
+    const val happyCommonFakePackage = "$happyFakeGroup:happy-processor-common"
+    const val happyCommonFake = "$happyCommonFakePackage:$snapshotVersion-SNAPSHOT"
+    const val happyProcessorSnapshotKsp = "$happyProcessorKspPackage:$snapshotVersion-SNAPSHOT"
+    const val happyAnnotationSnapshot = "$happyAnnotationPackage:$snapshotVersion-SNAPSHOT"
+  }
+
   object Testing {
-    const val compiletTestingVersion = "1.4.7"
+    private const val compiletTestingVersion = "1.4.7"
     const val compileTesting = "com.github.tschuchortdev:kotlin-compile-testing:$compiletTestingVersion"
     const val compileTestingKsp = "com.github.tschuchortdev:kotlin-compile-testing-ksp:$compiletTestingVersion"
     const val junit = "junit:junit:4.13.1"

@@ -27,8 +27,8 @@ internal fun HappyProcessorModule.findSealedParent(
     .map { it.resolve().declaration }
     .filterIsInstance<KSClassDeclaration>()
     .firstOrNull {
-      it.classKind == ClassKind.CLASS || it.classKind ==ClassKind.INTERFACE }
-    ?: return if (hType.isSealed) hType else null
+      it.classKind == ClassKind.CLASS || it.classKind == ClassKind.INTERFACE
+    } ?: return if (hType.isSealed) hType else null
 
   logInfo("qualifiedName: ${superClass.qualifiedName?.asString()}, isSealed: ${hType.isSealed}")
   if (superClass.qualifiedName?.asString() == "kotlin.Any") {
