@@ -15,6 +15,7 @@
 */
 package com.github.hadilq.happy.processor.common.generate
 
+import com.github.hadilq.happy.annotation.Happy
 import com.squareup.kotlinpoet.*
 
 public fun Sequence<Pair<List<String>, CommonHType>>.generateBuilderFunctions(
@@ -50,7 +51,7 @@ public fun Sequence<Pair<List<String>, CommonHType>>.generateBuilderFunctions(
 
 public sealed interface GenerateBuilderFunction {
 
-//  @Happy
+  @Happy
   public data class Function(
     val function: FunSpec
   ): GenerateBuilderFunction

@@ -52,7 +52,7 @@ object Dependencies {
   }
 
   object LatestHappy {
-    const val version = "0.1.0"
+    const val version = "0.1.1.1651794439075-SNAPSHOT"
     const val happyFakeGroup = "com.fake.happy"
     const val happyProcessorKaptPackage = "com.github.hadilq:happy-processor"
     const val happyProcessorKspPackage = "com.github.hadilq:happy-processor-ks"

@@ -22,6 +22,7 @@ plugins {
 setupPublication()
 
 repositories {
+  val snapshotForLatestVersion: Boolean = true
   /**
    * We need this `fakeGroup` to resolve the latest published library
    * directly from maven central and avoid omitting it like below!
@@ -36,9 +37,17 @@ repositories {
    * To see a similar log just run `./gradlew :happy-processor-common:dependencies`.
    */
   val fakeGroup = ivy {
-    url = uri("https://repo1.maven.org/maven2/com/github/hadilq")
+    if (snapshotForLatestVersion) {
+      url = uri("https://oss.sonatype.org/content/repositories/snapshots/com/github/hadilq")
+    } else {
+      url = uri("https://repo1.maven.org/maven2/com/github/hadilq")
+    }
     patternLayout {
-      artifact("[module]/[revision]/[module]-[revision].jar")
+      if (snapshotForLatestVersion) {
+        artifact("[module]/[revision]/[module]-0.1.1.1651794439075-20220505.234824-1.jar")
+      } else {
+        artifact("[module]/[revision]/[module]-[revision].jar")
+      }
     }
     metadataSources { artifact() }
   }
