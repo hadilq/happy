@@ -38,5 +38,5 @@ jobs:
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        run: ./gradlew publish
+        run: ./gradlew clean publish
         if: github.ref == 'refs/heads/main' && matrix.java_version == '11' && !matrix.ksp_enabled  && github.event_name == 'push'

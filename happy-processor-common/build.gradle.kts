@@ -49,7 +49,7 @@ repositories {
     url = uri("https://oss.sonatype.org/content/repositories/snapshots/com/github/hadilq")
 
     patternLayout {
-      artifact("[module]/[revision]/[module]-0.1.1.1651794439075-20220505.234824-1.jar")
+      artifact("[module]/[revision]/[module]-0.1.1.1651874075489-20220517.225728-1.jar")
     }
     metadataSources { artifact() }
   }

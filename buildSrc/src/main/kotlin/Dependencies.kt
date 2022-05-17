@@ -53,7 +53,7 @@ object Dependencies {
 
   object LatestHappy {
     const val version = "0.1.0"
-    const val snapshotVersion = "0.1.1.1651794439075"
+    const val snapshotVersion = "0.1.1.1651874075489"
     const val happyProcessorKaptPackage = "com.github.hadilq:happy-processor"
     const val happyProcessorKspPackage = "com.github.hadilq:happy-processor-ks"
     const val happyAnnotationPackage = "com.github.hadilq:happy-annotation"
