@@ -70,8 +70,11 @@ public class HappyProcessor : AbstractProcessor() {
       .asSequence()
       .map { it as TypeElement }
       .forEach { happyType ->
+
+        val debug = false
         val module = Module(
-          logInfo = { messager.printMessage(Diagnostic.Kind.NOTE, it, happyType) },
+          debug = debug,
+          logInfo = { if (debug) messager.printMessage(Diagnostic.Kind.NOTE, it, happyType) },
           logWarning = { messager.printMessage(Diagnostic.Kind.WARNING, it, happyType) },
           logError = { messager.printMessage(Diagnostic.Kind.ERROR, it, happyType) },
         )
@@ -80,7 +83,7 @@ public class HappyProcessor : AbstractProcessor() {
           typeElement = { elementUtils.getTypeElement(it) },
           typeName = { typeParams -> asTypeName(typeParams) },
         )
-        val sealedParentHType = findSealedParentKmClass(happyHType)
+        val sealedParentHType = module.findSealedParentKmClass(happyHType)
         if (sealedParentHType == null) {
           messager.printMessage(Diagnostic.Kind.ERROR, "@Happy: parent must be a sealed class!", happyType)
           return@forEach
@@ -104,7 +107,7 @@ public class HappyProcessor : AbstractProcessor() {
 
 @KotlinPoetMetadataPreview
 private data class Module(
-  override val debug: Boolean = false,
+  override val debug: Boolean,
   override val logInfo: (message: String) -> Unit,
   override val logWarning: (message: String) -> Unit,
   override val logError: (message: String) -> Unit,

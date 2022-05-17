@@ -22,17 +22,15 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 
 internal fun HappyProcessorModule.findSealedParent(
   hType: HType
-): HType? {
-  val superClass = hType.declaration.superTypes
-    .map { it.resolve().declaration }
-    .filterIsInstance<KSClassDeclaration>()
-    .firstOrNull {
-      it.classKind == ClassKind.CLASS || it.classKind == ClassKind.INTERFACE
-    } ?: return if (hType.isSealed) hType else null
-
-  logInfo("qualifiedName: ${superClass.qualifiedName?.asString()}, isSealed: ${hType.isSealed}")
-  if (superClass.qualifiedName?.asString() == "kotlin.Any") {
-    return if (hType.isSealed) hType else null
+): HType? = hType.declaration.superTypes
+  .map { it.resolve().declaration }
+  .filterIsInstance<KSClassDeclaration>()
+  .filter { it.classKind == ClassKind.CLASS || it.classKind == ClassKind.INTERFACE }
+  .mapNotNull { superClass ->
+    logInfo("qualifiedName: ${superClass.qualifiedName?.asString()}, isSealed: ${hType.isSealed}")
+    if (superClass.qualifiedName?.asString() == "kotlin.Any") {
+      return@mapNotNull hType
+    }
+    findSealedParent(HType(superClass))
   }
-  return findSealedParent(HType(superClass))
-}
+  .firstOrNull { it.isSealed }

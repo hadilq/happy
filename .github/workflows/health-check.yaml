@@ -33,7 +33,7 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java_version }}
       - name: Run all checks
-        run:  ./gradlew build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }} --stacktrace
+        run:  ./gradlew clean build check -Phappy.ksp.enable=${{ matrix.ksp_enabled }} -Pksp.incremental=${{ matrix.ksp_incremental_enabled }} --stacktrace
       - name: Publish SNAPSHOT
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}

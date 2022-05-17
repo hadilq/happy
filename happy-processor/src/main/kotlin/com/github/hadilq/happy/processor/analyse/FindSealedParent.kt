@@ -16,26 +16,38 @@
 package com.github.hadilq.happy.processor.analyse
 
 import com.github.hadilq.happy.processor.HType
+import com.github.hadilq.happy.processor.common.di.HappyProcessorModule
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
-import com.squareup.kotlinpoet.metadata.isSealed
+import com.squareup.kotlinpoet.metadata.isInterface
 import com.squareup.kotlinpoet.metadata.toKotlinClassMetadata
 import kotlinx.metadata.jvm.KotlinClassMetadata
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 
 @KotlinPoetMetadataPreview
-internal fun findSealedParentKmClass(
+internal fun HappyProcessorModule.findSealedParentKmClass(
   hType: HType,
 ): HType? {
-  val isSealed = hType.meta.flags.isSealed
-  val superClass: DeclaredType = hType.element.superclass as? DeclaredType ?: return if (isSealed) hType else null
-  val superTypeElement = superClass.asElement() as? TypeElement ?: return if (isSealed) hType else null
-  if (superTypeElement.qualifiedName.toString() == "java.util.Object") {
-    return if (isSealed) hType else null
+  if (hType.meta.flags.isInterface && hType.isSealed) {
+    return hType
   }
-  val supperKmClass = superTypeElement
-    .getAnnotation(Metadata::class.java)
-    ?.toKotlinClassMetadata<KotlinClassMetadata.Class>()
-    ?.toKmClass() ?: return if (isSealed) hType else null
-  return findSealedParentKmClass(hType.newType(superTypeElement, supperKmClass))
+  return mutableListOf(hType.element.superclass).apply { addAll(hType.element.interfaces) }
+    .mapNotNull { it as? DeclaredType }
+    .mapNotNull { it.asElement() as? TypeElement }
+    .mapNotNull { superClass ->
+      logInfo("super class: ${superClass.qualifiedName}")
+      if (superClass.qualifiedName.toString() == "java.lang.Object") {
+        return@mapNotNull hType
+      }
+      val superKmClass = superClass
+        .getAnnotation(Metadata::class.java)
+        ?.toKotlinClassMetadata<KotlinClassMetadata.Class>()
+        ?.toKmClass()
+
+      logInfo("super KM class: $superKmClass")
+
+      superKmClass
+        ?.let { findSealedParentKmClass(hType.newType(superClass, it)) }
+    }
+    .firstOrNull { it.isSealed }
 }
