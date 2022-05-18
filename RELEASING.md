@@ -44,5 +44,5 @@ It may take a while for the released artifact to be available out there, so be p
 
 - Tag the commit and push it
 ```
-git tag v${RELEASED_VERSION} && git push v${RELEASED_VERSION}
+git tag v${RELEASED_VERSION} && git push origin v${RELEASED_VERSION}
 ```
