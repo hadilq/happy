@@ -32,6 +32,7 @@ internal fun HappyProcessorModule.findSealedParentKmClass(
     return hType
   }
   return mutableListOf(hType.element.superclass).apply { addAll(hType.element.interfaces) }
+    .asSequence()
     .mapNotNull { it as? DeclaredType }
     .mapNotNull { it.asElement() as? TypeElement }
     .mapNotNull { superClass ->
