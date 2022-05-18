@@ -1,6 +1,15 @@
 CHANGE LOG
 ===
 
+## Version 0.1.1
+
+   _2022_05_18_
+
+   * Support sealed interface.
+   * Fix bugs!
+   * Update Kotlin, Dokka, KSP to 1.6.21.
+   * Use `Happy` to generate results classes in `happy-processor-common` library itself.
+
 ## Version 0.1.0
 
   _2021_12_30_
