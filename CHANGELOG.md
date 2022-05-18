@@ -8,7 +8,7 @@ CHANGE LOG
    * Support sealed interface.
    * Fix bugs!
    * Update Kotlin, Dokka, KSP to 1.6.21.
-   * Use `Happy` to generate results classes in `happy-processor-common` library itself.
+   * Use `Happy` to generate helper functions for result classes in `happy-processor-common` library itself.
 
 ## Version 0.1.0
 
