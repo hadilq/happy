@@ -46,3 +46,5 @@ It may take a while for the released artifact to be available out there, so be p
 ```
 git tag v${RELEASED_VERSION} && git push origin v${RELEASED_VERSION}
 ```
+
+-Use the above tag to make a release in Github release page.
