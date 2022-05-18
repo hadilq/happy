@@ -33,8 +33,9 @@ internal fun HappyProcessorModule.findSealedParentKmClass(
   }
   return mutableListOf(hType.element.superclass).apply { addAll(hType.element.interfaces) }
     .asSequence()
-    .mapNotNull { it as? DeclaredType }
-    .mapNotNull { it.asElement() as? TypeElement }
+    .filterIsInstance<DeclaredType>()
+    .mapNotNull { it.asElement() }
+    .filterIsInstance<TypeElement>()
     .mapNotNull { superClass ->
       logInfo("super class: ${superClass.qualifiedName}")
       if (superClass.qualifiedName.toString() == "java.lang.Object") {
